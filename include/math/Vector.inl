@@ -4,7 +4,7 @@
 
 #include "Vector.hpp"
 
-namespace Concerto::Component::Math
+namespace Concerto::Math
 {
 	template<typename T, std::size_t Size>
 	constexpr Vector<T, Size> Vector<T, Size>::operator+(const Vector& vector) const noexcept

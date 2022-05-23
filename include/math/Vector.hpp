@@ -8,7 +8,7 @@
 #include <array>
 #include <type_traits>
 
-namespace Concerto::Component::Math
+namespace Concerto::Math
 {
 	/**
 	 * @brief Vector class that represents a mathematical vector.
@@ -123,6 +123,10 @@ namespace Concerto::Component::Math
 	using Vector3i = Vector<int, 3>;
 	using Vector3d = Vector<double, 3>;
 	using Vector3f = Vector<float, 3>;
+
+	using Vector4i = Vector<int, 4>;
+	using Vector4d = Vector<double, 4>;
+	using Vector4f = Vector<float, 4>;
 }
 
 #include "Vector.inl"

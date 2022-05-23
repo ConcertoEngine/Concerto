@@ -6,7 +6,7 @@
 #define CONCERTO_TRANSFORM_HPP
 #include "Vector.hpp"
 
-namespace Concerto::Component::Math
+namespace Concerto::Math
 {
 	class Transform
 	{

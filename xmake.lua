@@ -7,10 +7,10 @@ target("concerto")
     set_symbols("debug")
     set_warnings("everything")
     set_languages("cxx20")
-    add_files("src/*.cpp", "src/ecs/*.cpp", "src/ecs/components/math/*.cpp")
-    add_includedirs("include", "include/ecs", "include/ecs/components", "include/ecs/components/math", "include/ecs/systems")
+    add_includedirs("include", "include/ecs", "include/math", "include/ecs/systems", "include/render/window")
+    add_files("src/*.cpp", "src/ecs/*.cpp", "src/math/*.cpp", "src/render/window/*.cpp")
     add_packages("bgfx", "glfw")
-    add_links("bgfxRelease", "glfw")
+    add_links("bgfxRelease", "glfw3")
     set_optimize("none")
 
 --
