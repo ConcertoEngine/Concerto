@@ -8,16 +8,6 @@ Concerto::AWindow::AWindow(const std::string& title, unsigned int width, unsigne
 
 }
 
-std::size_t Concerto::AWindow::getWidth()
-{
-	return _width;
-}
-
-std::size_t Concerto::AWindow::getHeight()
-{
-	return _height;
-}
-
 const Concerto::Math::Vector4f& Concerto::AWindow::getClearColor() const
 {
 	return _clearColor;

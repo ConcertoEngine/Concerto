@@ -5,6 +5,7 @@
 #ifndef CONCERTO_IWINDOW_HPP
 #define CONCERTO_IWINDOW_HPP
 #include <string>
+#include <memory>
 #include "math/Vector.hpp"
 namespace Concerto
 {
@@ -13,9 +14,14 @@ namespace Concerto
 	public:
 		virtual ~IWindow() = default;
 		/**
+		 *
+		 * @return
+		 */
+		virtual void *getRawWindow() = 0;
+		/**
 		 * @return The cursor position in the window
 		 */
-		virtual Math::Vector2i getCursorPosition() = 0;
+		virtual Math::Vector2d getCursorPosition() = 0;
 		/**
 		 * @return The width of the window
 		 */
@@ -73,7 +79,7 @@ namespace Concerto
 		 */
 		virtual void setCursorDisabled(bool disabled) = 0;
 	};
-
+	using IWindowPtr = std::unique_ptr<IWindow>;
 }
 
 #endif //CONCERTO_IWINDOW_HPP

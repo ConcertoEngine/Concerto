@@ -13,13 +13,10 @@ namespace Concerto
 	{
 	public:
 		AWindow(const std::string& title, unsigned int width, unsigned int height);
+
 		AWindow() = delete;
 
 		AWindow(AWindow&&) = delete;
-
-		std::size_t getWidth() final;
-
-		std::size_t getHeight() final;
 
 		[[nodiscard]] const Math::Vector4f& getClearColor() const final;
 
@@ -34,6 +31,7 @@ namespace Concerto
 		AWindow& operator=(const AWindow&) = delete;
 
 		~AWindow() override = default;
+
 	protected:
 		std::string _title;
 		std::size_t _width;

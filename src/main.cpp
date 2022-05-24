@@ -1,14 +1,18 @@
+#include <cstdint>
 #include <iostream>
-
-#include "ecs/Registry.hpp"
 #include <string>
 
-int main(int argc, char** argv)
+ #include "ecs/Registry.hpp"
+#include "World.hpp"
+#include "ISystem.hpp"
+#include "math/Vector.hpp"
+#include "math/Transform.hpp"
+#include <vector>
+#include "render/window/GlfW3.hpp"
+
+
+int main()
 {
-	using namespace Concerto::Ecs;
-	Registry r;
-	auto entity = r.createEntity();
-	auto str = r.emplaceComponent<std::string>(entity, "x");
-	std::cout << str << std::endl;
-	r.removeComponent<std::string>(entity);
+	using namespace Concerto;
+
 }
