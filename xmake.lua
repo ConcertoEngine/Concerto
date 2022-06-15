@@ -1,5 +1,4 @@
 add_rules("mode.debug")
-add_requires("bgfx")
 add_requires("glfw")
 
 target("concerto")
@@ -9,8 +8,7 @@ target("concerto")
     set_languages("cxx20")
     add_includedirs("include", "include/ecs", "include/math", "include/ecs/systems", "include/render/window")
     add_files("src/*.cpp", "src/ecs/*.cpp", "src/math/*.cpp", "src/render/window/*.cpp")
-    add_packages("bgfx", "glfw")
-    add_links("bgfxRelease", "glfw3")
+    add_packages("glfw")
     set_optimize("none")
 
 --
