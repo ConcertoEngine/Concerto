@@ -29,5 +29,8 @@ jobs:
       - name: install xmake
         run: bash <(curl -fsSL https://xmake.io/shget.text)
       
+      - name: update xrepo
+        run: xmake repo --update
+        
       - name: build
-        run: xmake -y
+        run: xmake -yvD
