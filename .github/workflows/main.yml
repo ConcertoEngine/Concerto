@@ -30,4 +30,4 @@ jobs:
         run: bash <(curl -fsSL https://xmake.io/shget.text)
       
       - name: build
-        run: xmake
+        run: yes | xmake
