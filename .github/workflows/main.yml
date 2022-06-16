@@ -36,3 +36,6 @@ jobs:
         
       - name: build
         run: xmake -yvD
+
+      - name: test
+        run: xmake run ConcertoTest
