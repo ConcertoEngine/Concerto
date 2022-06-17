@@ -38,4 +38,4 @@ jobs:
         run: xmake -yvD
 
       - name: test
-        run: xmake run ConcertoTest
+        run: xmake run ConcertoTests
