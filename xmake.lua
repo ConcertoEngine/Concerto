@@ -1,5 +1,4 @@
 add_rules("mode.debug")
-add_requires("glfw")
 add_requires("gtest")
 
 target("Concerto")
@@ -9,7 +8,6 @@ target("Concerto")
     set_languages("cxx20")
     add_includedirs("include", "include/ecs", "include/math", "include/ecs/systems", "include/render/window")
     add_files("src/*.cpp", "src/ecs/*.cpp", "src/math/*.cpp", "src/render/window/*.cpp")
-    add_packages("glfw")
     set_optimize("none")
 
 target("ConcertoUnitTests")
