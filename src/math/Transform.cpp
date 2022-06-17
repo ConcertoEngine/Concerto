@@ -15,3 +15,8 @@ void Concerto::Math::Transform::translate(const Concerto::Math::Vector3f& vec)
 {
 	translate(vec.X(), vec.Y(), vec.Z());
 }
+
+bool Concerto::Math::Transform::operator==(const Concerto::Math::Transform& other) const
+{
+	return Location == other.Location && Rotation == other.Rotation && Scale == other.Scale;
+}
