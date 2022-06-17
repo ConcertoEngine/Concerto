@@ -1,10 +1,8 @@
 //
 // Created by arthur on 16/06/2022.
 //
-#define CATCH_CONFIG_RUNNER
 
-#include <iostream>
-#include <catch2/catch.hpp>
+#include <gtest/gtest.h>
 #include "Registry.hpp"
 #include "Transform.hpp"
 #include "Vector.hpp"
@@ -13,20 +11,57 @@ using namespace Concerto::Ecs;
 using namespace Concerto::Math;
 using namespace Concerto;
 
-TEST_CASE("Registry", "AddEntity")
+TEST(Registry, AddEntity)
 {
 	Registry r;
 	Entity::Id entity = r.createEntity();
-	REQUIRE(0 == entity);
+	ASSERT_EQ(0, entity);
 	entity = r.createEntity();
-	REQUIRE(1 == entity);
+	ASSERT_EQ(1, entity);
 }
 
-TEST_CASE("Registry", "addComponent")
+TEST(Registry, addComponent)
 {
 	Registry r;
 	Entity::Id entity = r.createEntity();
-	auto &comp = r.emplaceComponent<Transform>(entity, Transform(Vector3f(0.f, 0.f, 0.f),  Vector3f(0.f, 0.f, 0.f), Vector3f(0.f, 0.f, 0.f)));
+	Transform transform(Vector3f(0.f, 0.f, 0.f),  Vector3f(0.f, 0.f, 0.f), Vector3f(0.f, 0.f, 0.f));
+	auto &comp = r.emplaceComponent<Transform>(entity, transform);
+	ASSERT_EQ(comp, transform);
+}
+
+TEST(Registry, getComponent)
+{
+	Registry r;
+	Entity::Id entity = r.createEntity();
+	Transform transform(Vector3f(0.f, 0.f, 0.f),  Vector3f(0.f, 0.f, 0.f), Vector3f(0.f, 0.f, 0.f));
+	auto &comp = r.emplaceComponent<Transform>(entity, transform);
 	auto &comp2 = r.getComponent<Transform>(entity);
-	REQUIRE(&comp == &comp2);
+	ASSERT_EQ(&comp, &comp2);
+}
+
+TEST(Registry, removeComponent)
+{
+	Registry r;
+	Entity::Id entity = r.createEntity();
+	Transform transform(Vector3f(0.f, 0.f, 0.f),  Vector3f(0.f, 0.f, 0.f), Vector3f(0.f, 0.f, 0.f));
+	auto& comp = r.emplaceComponent<Transform>(entity, transform);
+	r.removeComponent<Transform>(entity);
+	try {
+		auto& comp2 = r.getComponent<Transform>(entity);
+		FAIL();
+	}
+	catch (const std::runtime_error &e) {
+		SUCCEED();
+	}
+}
+
+TEST(Registry, hasComponent)
+{
+	Registry r;
+	Entity::Id entity = r.createEntity();
+	Transform transform(Vector3f(0.f, 0.f, 0.f),  Vector3f(0.f, 0.f, 0.f), Vector3f(0.f, 0.f, 0.f));
+	auto& comp = r.emplaceComponent<Transform>(entity, transform);
+	ASSERT_TRUE(r.hasComponent<Transform>(entity));
+	r.removeComponent<Transform>(entity);
+	ASSERT_FALSE(r.hasComponent<Transform>(entity));
 }
