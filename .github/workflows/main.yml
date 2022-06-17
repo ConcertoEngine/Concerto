@@ -37,5 +37,5 @@ jobs:
       - name: build
         run: xmake -yvD
 
-      - name: test
-        run: xmake run ConcertoTests
+      - name: tests
+        run: xmake run ConcertoUnitTests
