@@ -135,7 +135,7 @@ namespace Concerto::Ecs
 		{
 			Component::Id id = Component::getId<Comp>();
 			auto it = _components.find(id);
-			return it == _components.end() && it->second.has(entity);
+			return it != _components.end() && it->second.has(entity);
 		}
 
 		/**

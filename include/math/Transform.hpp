@@ -28,7 +28,7 @@ namespace Concerto::Math
 		void translate(float x, float y, float z);
 
 		void translate(const Vector3f& vec);
-
+		bool operator==(const Transform& other) const;
 		Vector3f Location;
 		Vector3f Rotation; // TODO Quaternion
 		Vector3f Scale;
