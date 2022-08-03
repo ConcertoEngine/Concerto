@@ -12,7 +12,7 @@
 
 namespace Concerto::Ecs::System
 {
-	const char shaderSource[] = R"(
+const char shaderSource[] = R"(
 [nzsl_version("1.0")]
 module;
 
@@ -86,11 +86,11 @@ fn main(vertIn: VertIn) -> VertOut
 																 _nazara(nullptr),
 																 _window(),
 																 _camAngles(0.f, 0.f, 0.f),
-																 _camQuat(_camAngles)
+																 _camQuat(_camAngles),
+																 _shouldClose(false)
 	{
 		if (!std::filesystem::is_directory(_assetPath))
 			Logger::error(_assetPath + " is not a valid directory");
-
 		if (data["RenderingAPI"].as<Config::String>() == "Vulkan")
 			_rendererConfig.preferredAPI = Nz::RenderAPI::Vulkan;
 		else _rendererConfig.preferredAPI = Nz::RenderAPI::OpenGL;
@@ -147,10 +147,9 @@ fn main(vertIn: VertIn) -> VertOut
 		_pipeline = _device->InstantiateRenderPipeline(pipelineInfo);
 		const std::shared_ptr<Nz::RenderDevice>& renderDevice = _window.GetRenderDevice();
 		_commandPool = renderDevice->InstantiateCommandPool(Nz::QueueType::Graphics);
-		viewerShaderBinding = _basePipelineLayout->AllocateShaderBinding(0);
-		textureShaderBinding = _renderPipelineLayout->AllocateShaderBinding(1);
 		_window.EnableEventPolling(true);
 		Nz::Mouse::SetRelativeMouseMode(true);
+		Logger::info("sizeof(UniformBufferObject) = " + std::to_string(sizeof(UniformBufferObject)));
 	}
 
 	void NazaraRenderer::update(float deltaTime, Concerto::Ecs::Registry& r)
@@ -209,13 +208,13 @@ fn main(vertIn: VertIn) -> VertOut
 								mesh.GetSubMesh(0));
 						const std::shared_ptr<Nz::VertexBuffer>& meshVB = sm->GetVertexBuffer();
 						const std::shared_ptr<const Nz::IndexBuffer>& meshIB = sm->GetIndexBuffer();
-						auto& renderBufferIB = dynamic_cast<Nz::RenderBuffer&>(*meshVB->GetBuffer());
-						auto& renderBufferVB = dynamic_cast<Nz::RenderBuffer&>(*meshVB->GetBuffer());
+						auto& renderBufferVB = static_cast<Nz::RenderBuffer&>(*meshVB->GetBuffer());
+						auto& renderBufferIB = static_cast<Nz::RenderBuffer&>(*meshIB->GetBuffer());
 						builder.BindIndexBuffer(renderBufferIB, Nz::IndexType::U16);
 						builder.BindPipeline(*_pipeline);
 						builder.BindVertexBuffer(0, renderBufferVB);
-						builder.BindShaderBinding(0, *viewerShaderBinding);
-						builder.BindShaderBinding(1, *textureShaderBinding);
+						builder.BindShaderBinding(0, *_viewerShaderBinding);
+						builder.BindShaderBinding(1, *_textureShaderBinding);
 
 						builder.SetScissor(Nz::Recti{ 0, 0, int(_windowSize.x), int(_windowSize.y) });
 						builder.SetViewport(Nz::Recti{ 0, 0, int(_windowSize.x), int(_windowSize.y) });
@@ -241,10 +240,6 @@ fn main(vertIn: VertIn) -> VertOut
 		Nz::MeshParams meshParams;
 		meshParams.bufferFactory = Nz::GetRenderBufferFactory(_device);
 		meshParams.center = true;
-//		meshParams.matrix = Nz::Matrix4f::Rotate(
-//				Nz::EulerAnglesf(transform.Rotation.X(), transform.Rotation.Y(), transform.Rotation.Z())) *
-//							Nz::Matrix4f::Scale(
-//									Nz::Vector3f(transform.Scale.X(), transform.Scale.Y(), transform.Scale.Z()));
 		meshParams.matrix =
 				Nz::Matrix4f::Rotate(Nz::EulerAnglesf(0.f, -90.f, 0.f)) * Nz::Matrix4f::Scale(Nz::Vector3f(0.002f));
 		meshParams.vertexDeclaration = Nz::VertexDeclaration::Get(Nz::VertexLayout::XYZ_Normal_UV);
@@ -304,6 +299,7 @@ fn main(vertIn: VertIn) -> VertOut
 			{
 			case Nz::WindowEventType::Quit:
 				_window.Close();
+				_shouldClose = true;
 				break;
 
 			case Nz::WindowEventType::MouseMoved: // La souris a bougé
@@ -327,7 +323,8 @@ fn main(vertIn: VertIn) -> VertOut
 			case Nz::WindowEventType::Resized:
 			{
 				Nz::Vector2ui windowSize = _window.GetSize();
-				_ubo.projectionMatrix = Nz::Matrix4f::Perspective(Nz::DegreeAnglef(70.f), float(windowSize.x) / windowSize.y, 0.1f, 1000.f);
+				_ubo.projectionMatrix = Nz::Matrix4f::Perspective(Nz::DegreeAnglef(70.f),
+						float(windowSize.x) / windowSize.y, 0.1f, 1000.f);
 				_uboUpdate = true;
 				break;
 			}
@@ -345,26 +342,36 @@ fn main(vertIn: VertIn) -> VertOut
 				viewerPos += _camQuat * Nz::Vector3f::Forward() * cameraSpeed;
 
 			// Si la flèche du bas ou la touche S est pressée, on recule
-			if (Nz::Keyboard::IsKeyPressed(Nz::Keyboard::VKey::Down) || Nz::Keyboard::IsKeyPressed(Nz::Keyboard::VKey::S))
+			if (Nz::Keyboard::IsKeyPressed(Nz::Keyboard::VKey::Down) ||
+				Nz::Keyboard::IsKeyPressed(Nz::Keyboard::VKey::S))
 				viewerPos += _camQuat * Nz::Vector3f::Backward() * cameraSpeed;
 
 			// Etc...
-			if (Nz::Keyboard::IsKeyPressed(Nz::Keyboard::VKey::Left) || Nz::Keyboard::IsKeyPressed(Nz::Keyboard::VKey::Q))
+			if (Nz::Keyboard::IsKeyPressed(Nz::Keyboard::VKey::Left) ||
+				Nz::Keyboard::IsKeyPressed(Nz::Keyboard::VKey::Q))
 				viewerPos += _camQuat * Nz::Vector3f::Left() * cameraSpeed;
 
 			// Etc...
-			if (Nz::Keyboard::IsKeyPressed(Nz::Keyboard::VKey::Right) || Nz::Keyboard::IsKeyPressed(Nz::Keyboard::VKey::D))
+			if (Nz::Keyboard::IsKeyPressed(Nz::Keyboard::VKey::Right) ||
+				Nz::Keyboard::IsKeyPressed(Nz::Keyboard::VKey::D))
 				viewerPos += _camQuat * Nz::Vector3f::Right() * cameraSpeed;
 
 			// Majuscule pour monter, notez l'utilisation d'une direction globale (Non-affectée par la rotation)
-			if (Nz::Keyboard::IsKeyPressed(Nz::Keyboard::VKey::LShift) || Nz::Keyboard::IsKeyPressed(Nz::Keyboard::VKey::RShift))
+			if (Nz::Keyboard::IsKeyPressed(Nz::Keyboard::VKey::LShift) ||
+				Nz::Keyboard::IsKeyPressed(Nz::Keyboard::VKey::RShift))
 				viewerPos += Nz::Vector3f::Up() * cameraSpeed;
 
 			// Contrôle (Gauche ou droite) pour descendre dans l'espace global, etc...
-			if (Nz::Keyboard::IsKeyPressed(Nz::Keyboard::VKey::LControl) || Nz::Keyboard::IsKeyPressed(Nz::Keyboard::VKey::RControl))
+			if (Nz::Keyboard::IsKeyPressed(Nz::Keyboard::VKey::LControl) ||
+				Nz::Keyboard::IsKeyPressed(Nz::Keyboard::VKey::RControl))
 				viewerPos += Nz::Vector3f::Down() * cameraSpeed;
 
 			_uboUpdate = true;
 		}
+	}
+
+	bool NazaraRenderer::shouldClose() const
+	{
+		return _shouldClose;
 	}
 }

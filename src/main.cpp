@@ -21,7 +21,7 @@ int main()
 		const Config::Object& config = structuredData.getConfig();
 		World world;
 		Registry& r = world.getRegistry();
-		world.addSystem<System::NazaraRenderer>(config);
+		auto &renderer = world.addSystem<System::NazaraRenderer>(config);
 
 		auto entity = r.createEntity();
 		Transform transform(Vector3f(0.f, 0.f, 0.f), Vector3f(0.f, 0.f, 0.f), Vector3f(0.f, 0.f, 0.f));
@@ -32,7 +32,7 @@ int main()
 		auto& meshComp = r.emplaceComponent<Mesh>(entity, mesh);
 		auto& x = r.getComponent<Transform>(entity);
 		auto& xx = r.getComponent<Mesh>(entity);
-		while (true)
+		while (!renderer.shouldClose())
 		{
 			world.update(1.f / 60.f);
 		}
@@ -41,4 +41,5 @@ int main()
 	{
 		std::cerr << e.what() << std::endl;
 	}
+	return 0;
 }

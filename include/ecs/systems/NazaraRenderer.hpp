@@ -47,8 +47,10 @@ namespace Concerto::Ecs::System
 
 		void stepUpdate(float deltaTime, Registry& r) override;
 
+		bool shouldClose() const;
 	private:
 		void updateEvents();
+		bool _shouldClose;
 		Nz::Mesh &createMeshIfNotExist(const Mesh &mesh, const Math::Transform &transform);
 		Nz::Texture &createTextureIfNotExist(const Mesh &mesh);
 		std::string _assetPath;
@@ -57,8 +59,6 @@ namespace Concerto::Ecs::System
 		Nz::EulerAnglesf _camAngles;
 		Nz::Quaternionf _camQuat;
 		Nz::Clock updateClock;
-		Nz::Clock secondClock;
-		unsigned int fps = 0;
 		Nz::Vector3f viewerPos = Nz::Vector3f::Zero();
 
 		Nz::Renderer::Config _rendererConfig;
@@ -67,8 +67,6 @@ namespace Concerto::Ecs::System
 		Nz::ShaderBindingPtr _viewerShaderBinding;
 		Nz::ShaderBindingPtr _textureShaderBinding;
 		Nz::Vector2ui _windowSize;
-		Nz::ShaderBindingPtr viewerShaderBinding;
-		Nz::ShaderBindingPtr textureShaderBinding;
 
 		nzsl::Ast::ModulePtr _shaderModule;
 		nzsl::ShaderWriter::States _states;
