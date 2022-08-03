@@ -4,7 +4,8 @@
 
 #include <iostream>
 #include <version>
-#include <experimental/source_location>
+#include <stdexcept>
+//#include <source_location>
 
 namespace Concerto
 {
@@ -41,9 +42,9 @@ namespace Concerto
         * @param message The message to log
         */
         template<typename T>
-        static void debug(const T& message, const std::experimental::source_location& location = std::experimental::source_location::current())
+        static void debug(const T& message/*, const std::source_location& location = std::source_location::current()*/)
         {
-            log(message, LoggingLevel::DEBUG, location);
+            log(message, LoggingLevel::DEBUG/*, location*/);
         }
         /**
         * @brief Log a message with the DEBUG level = WARNING
@@ -62,6 +63,7 @@ namespace Concerto
         static void error(const T& message)
         {
             log(message, LoggingLevel::ERROR);
+			throw std::runtime_error(message);
         }
         /**
         * @brief Log a message
@@ -70,12 +72,12 @@ namespace Concerto
         * @param location The location of the message
         */
         template<typename T>
-        static void log(const T& message, LoggingLevel level, const std::experimental::source_location& location = std::experimental::source_location::current())
+        static void log(const T& message, LoggingLevel level/*, const std::source_location& location = std::experimental::source_location::current()*/)
         {
             switch (level)
             {
                 case LoggingLevel::DEBUG:
-                    std::cout << Terminal::Color::CYAN << "[D] " << location.function_name() << ":" << location.line()  << " message: " << message << Terminal::Color::DEFAULT << std::endl;
+                    std::cout << Terminal::Color::CYAN << "[D] "/* << location.function_name() << ":" << location.line()  */<< " message: " << message << Terminal::Color::DEFAULT << std::endl;
                     break;
                 case LoggingLevel::INFO:
                     std::cout << Terminal::Color::GREEN << "[i] " << message << Terminal::Color::DEFAULT << std::endl;

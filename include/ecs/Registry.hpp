@@ -87,7 +87,7 @@ namespace Concerto::Ecs
 				auto it = _components.emplace(id, map_element());
 				return std::any_cast<Comp&>(it.first->second.emplace(entity, std::forward<Args>(args)...));
 			}
-			auto& sparseArrayElement = _components.at(id).emplace(entity, std::forward<Args>(args)...);
+			auto& sparseArrayElement = _components.at(entity).emplace(id, std::forward<Args>(args)...);
 			return std::any_cast<Comp&>(sparseArrayElement);
 		}
 
@@ -117,12 +117,12 @@ namespace Concerto::Ecs
 		Comp& getComponent(Entity::Id entity)
 		{
 			Component::Id id = Component::getId<Comp>();
-			auto it = _components.find(id);
+			auto it = _components.find(entity);
 			if (it == _components.end())
 				throw std::runtime_error("Component not found");
-			if (!it->second.has(entity))
+			if (!it->second.has(id))
 				throw std::runtime_error("Component not found");
-			return std::any_cast<Comp&>(it->second[entity]);
+			return std::any_cast<Comp&>(it->second[id]);
 		}
 
 		/**
