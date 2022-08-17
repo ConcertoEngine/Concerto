@@ -80,35 +80,35 @@ namespace Concerto::Config {
 		explicit Node(Double d) : _variant(d) {}
 		Node(Node &&) = default;
 		/**
-		* @brief Cast the node as T
+		* @brief Cast the node As T
 		* @return The type of the node
 		**/
-		template <typename T> T &as() { return std::get<T>(_variant); }
+		template <typename T> T &As() { return std::get<T>(_variant); }
 
 		/**
-		* @brief Cast the node as const T
+		* @brief Cast the node As const T
 		* @return The type of the node
 		**/
-		template <typename T> const T &as() const { return std::get<T>(_variant); }
+		template <typename T> [[nodiscard]] const T &As() const { return std::get<T>(_variant); }
 
 		/**
-		* @brief Cast the node as an Object
+		* @brief Cast the node As an Object
 		* @return The node contained at key
 		**/
 		Node &operator[](const String &key) const {
 			auto node =
-					std::find_if(as<Object>().begin(), as<Object>().end(),
+					std::find_if(As<Object>().begin(), As<Object>().end(),
 							[&key](const auto &pair) { return pair.first == key; });
-			if (node == as<Object>().end())
+			if (node == As<Object>().end())
 				throw std::out_of_range("Key not found: " + key);
 			return *node->second;
 		}
 
 		/**
-		* @brief Cast the node as an Array
+		* @brief Cast the node As an Array
 		* @return The node contained at index
 		**/
-		Node &operator[](std::size_t index) const { return *as<Array>().at(index); }
+		Node &operator[](std::size_t index) const { return *As<Array>().at(index); }
 
 	private:
 		Variant _variant;

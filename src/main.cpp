@@ -20,21 +20,21 @@ int main()
 		StructuredData structuredData("./config.json");
 		const Config::Object& config = structuredData.getConfig();
 		World world;
-		Registry& r = world.getRegistry();
-		auto &renderer = world.addSystem<System::NazaraRenderer>(config);
+		Registry& r = world.GetRegistry();
+		auto& renderer = world.AddSystem<System::NazaraRenderer>(config);
 
-		auto entity = r.createEntity();
+		auto entity = r.CreateEntity();
 		Transform transform(Vector3f(0.f, 0.f, 0.f), Vector3f(0.f, 0.f, 0.f), Vector3f(0.f, 0.f, 0.f));
-		auto& transformComp = r.emplaceComponent<Transform>(entity, transform);
+		auto& transformComp = r.EmplaceComponent<Transform>(entity, transform);
 		Mesh mesh;
 		mesh.modelPath = "spaceship.obj";
 		mesh.texturePath = "diffuse.png";
-		auto& meshComp = r.emplaceComponent<Mesh>(entity, mesh);
-		auto& x = r.getComponent<Transform>(entity);
-		auto& xx = r.getComponent<Mesh>(entity);
-		while (!renderer.shouldClose())
+		auto& meshComp = r.EmplaceComponent<Mesh>(entity, std::move(mesh));
+
+
+		while (!renderer.ShouldClose())
 		{
-			world.update(1.f / 60.f);
+			world.Update(1.f / 60.f);
 		}
 	}
 	catch (const std::exception& e)

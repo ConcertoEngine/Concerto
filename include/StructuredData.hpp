@@ -19,9 +19,9 @@ namespace Concerto
 		StructuredData(StructuredData&&) = default;
 		const Config::Object &getConfig() const;
 	private:
-		Config::Object getObject(const json &object);
-		Config::Array getArray(const json &array);
-		Config::NodePtr getPrimitive(const json &primitive);
+		Config::Object GetObject(const json &object);
+		Config::Array GetArray(const json &array);
+		Config::NodePtr GetPrimitive(const json &primitive);
 		Config::Object _config;
 	};
 }

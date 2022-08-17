@@ -36,6 +36,6 @@ CMakeLists.txt
 *.app
 
 CMakeLists.txt
-cmake-build-debug
+cmake-build-Debug
 .xmake
 build

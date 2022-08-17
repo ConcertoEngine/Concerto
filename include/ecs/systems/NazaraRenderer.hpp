@@ -14,7 +14,7 @@
 
 #include "Mesh.hpp"
 #include "Transform.hpp"
-
+#include "SparseArray.hpp"
 #include "systems/ASystem.hpp"
 
 #include "Nazara/Core.hpp"
@@ -43,16 +43,23 @@ namespace Concerto::Ecs::System
 
 		~NazaraRenderer() override = default;
 
-		void update(float deltaTime, Registry& r) override;
+		void Update(float deltaTime, Registry& r) override;
 
-		void stepUpdate(float deltaTime, Registry& r) override;
+		void StepUpdate(float deltaTime, Registry& r) override;
 
-		bool shouldClose() const;
+		bool ShouldClose() const;
+
 	private:
-		void updateEvents();
+		void UpdateEvents();
+
 		bool _shouldClose;
-		Nz::Mesh &createMeshIfNotExist(const Mesh &mesh, const Math::Transform &transform);
-		Nz::Texture &createTextureIfNotExist(const Mesh &mesh);
+
+		void CreateUbo(Entity::Id entity, const Math::Transform& transform, Nz::UploadPool &uploadPool);
+		void UpdateUbo(Entity::Id entity, const Math::Transform& transform);
+		Nz::Mesh& CreateMeshIfNotExist(Entity::Id entity, const Mesh& mesh, const Math::Transform& transform);
+
+		Nz::Texture& CreateTextureIfNotExist(const Mesh& mesh);
+
 		std::string _assetPath;
 		UniformBufferObject _ubo;
 		bool _uboUpdate = true;
@@ -76,13 +83,17 @@ namespace Concerto::Ecs::System
 		std::shared_ptr<Nz::RenderDevice> _device;
 		std::shared_ptr<Nz::RenderPipelineLayout> _basePipelineLayout;
 		std::shared_ptr<Nz::RenderPipelineLayout> _renderPipelineLayout;
-		std::shared_ptr<Nz::RenderBuffer> _uniformBuffer;
 		std::shared_ptr<Nz::ShaderModule> _fragVertShader;
 		std::shared_ptr<Nz::CommandPool> _commandPool;
 		std::shared_ptr<Nz::RenderPipeline> _pipeline;
+		std::shared_ptr<Nz::TextureSampler> _textureSampler;
 
 		std::unordered_map<std::string, std::shared_ptr<Nz::Mesh>> _meshes;
 		std::unordered_map<std::string, std::shared_ptr<Nz::Texture>> _textures;
+
+		SparseArray<std::pair<UniformBufferObject, Nz::ShaderBindingPtr>> _ubos;
+		SparseArray<std::shared_ptr<Nz::RenderBuffer>> _uniformBuffers;
+		SparseArray<std::reference_wrapper<Nz::UploadPool::Allocation>> _allocations;
 	};
 }
 #endif //CONCERTO_NAZARARENDERER_HPP

@@ -15,7 +15,7 @@ namespace Concerto::Ecs
 		using Id = std::size_t;
 
 		template<typename T>
-		static Id getId()
+		static Id GetId()
 		{
 			static const Id id = _nextId++;
 			return id;

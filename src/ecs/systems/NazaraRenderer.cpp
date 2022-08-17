@@ -12,7 +12,7 @@
 
 namespace Concerto::Ecs::System
 {
-const char shaderSource[] = R"(
+	const char shaderSource[] = R"(
 [nzsl_version("1.0")]
 module;
 
@@ -82,7 +82,7 @@ fn main(vertIn: VertIn) -> VertOut
 )";
 
 	NazaraRenderer::NazaraRenderer(const Config::Object& data) : ASystem(data),
-																 _assetPath(data["assetPath"].as<std::string>()),
+																 _assetPath(data["assetPath"].As<std::string>()),
 																 _nazara(nullptr),
 																 _window(),
 																 _camAngles(0.f, 0.f, 0.f),
@@ -90,28 +90,24 @@ fn main(vertIn: VertIn) -> VertOut
 																 _shouldClose(false)
 	{
 		if (!std::filesystem::is_directory(_assetPath))
-			Logger::error(_assetPath + " is not a valid directory");
-		if (data["RenderingAPI"].as<Config::String>() == "Vulkan")
+			Logger::Error(_assetPath + " is not a valid directory");
+		if (data["RenderingAPI"].As<Config::String>() == "Vulkan")
 			_rendererConfig.preferredAPI = Nz::RenderAPI::Vulkan;
 		else _rendererConfig.preferredAPI = Nz::RenderAPI::OpenGL;
 		_nazara = std::make_unique<Nz::Modules<Nz::Renderer>>(_rendererConfig);
 		_device = Nz::Renderer::Instance()->InstanciateRenderDevice(0);
-		if (!_window.Create(_device, Nz::VideoMode(1280, 720, 32), data["GameName"].as<Config::String>()))
-			Logger::error("Failed to create window");
+		if (!_window.Create(_device, Nz::VideoMode(1280, 720, 32), data["GameName"].As<Config::String>()))
+			Logger::Error("Failed to create window");
 		_windowSize = _window.GetSize();
 		nzsl::Ast::ModulePtr shaderModule = nzsl::Parse(std::string_view(shaderSource, sizeof(shaderSource)));
 		if (!shaderModule)
-			Logger::error("Failed to parse shader module");
+			Logger::Error("Failed to parse shader module");
 		_states.optionValues[Nz::CRC32("red")] = false;
 		_states.optimize = true;
 		_fragVertShader = _device->InstantiateShaderModule(
 				nzsl::ShaderStageType::Fragment | nzsl::ShaderStageType::Vertex, *shaderModule, _states);
 		if (!_fragVertShader)
-			Logger::error("Failed to instantiate shader");
-		_ubo.projectionMatrix = Nz::Matrix4f::Perspective(Nz::DegreeAnglef(70.f), float(_windowSize.x) / _windowSize.y,
-				0.1f, 1000.f);
-		_ubo.viewMatrix = Nz::Matrix4f::Translate(Nz::Vector3f::Backward() * 1);
-		_ubo.modelMatrix = Nz::Matrix4f::Translate(Nz::Vector3f::Forward() * 2);
+			Logger::Error("Failed to instantiate shader");
 		auto& uboBinding = _pipelineLayoutInfo.bindings.emplace_back();
 		uboBinding.setIndex = 0;
 		uboBinding.bindingIndex = 0;
@@ -124,18 +120,9 @@ fn main(vertIn: VertIn) -> VertOut
 		textureBinding.shaderStageFlags = nzsl::ShaderStageType::Fragment;
 		textureBinding.type = Nz::ShaderBindingType::Texture;
 		_renderPipelineLayout = _device->InstantiateRenderPipelineLayout(std::move(_pipelineLayoutInfo));
-		_viewerShaderBinding = _basePipelineLayout->AllocateShaderBinding(0);
 		_textureShaderBinding = _renderPipelineLayout->AllocateShaderBinding(1);
-		_uniformBuffer = _device->InstantiateBuffer(Nz::BufferType::Uniform, sizeof(UniformBufferObject),
-				Nz::BufferUsage::DeviceLocal | Nz::BufferUsage::Dynamic);
-		_viewerShaderBinding->Update({
-				{
-						0,
-						Nz::ShaderBinding::UniformBufferBinding{
-								_uniformBuffer.get(), 0, sizeof(UniformBufferObject)
-						}
-				}
-		});
+//		_uniformBuffer = _device->InstantiateBuffer(Nz::BufferType::Uniform, sizeof(UniformBufferObject),
+//				Nz::BufferUsage::DeviceLocal | Nz::BufferUsage::Dynamic);
 		Nz::RenderPipelineInfo pipelineInfo;
 		pipelineInfo.pipelineLayout = _renderPipelineLayout;
 		pipelineInfo.faceCulling = true;
@@ -149,14 +136,12 @@ fn main(vertIn: VertIn) -> VertOut
 		_commandPool = renderDevice->InstantiateCommandPool(Nz::QueueType::Graphics);
 		_window.EnableEventPolling(true);
 		Nz::Mouse::SetRelativeMouseMode(true);
-		Logger::info("sizeof(UniformBufferObject) = " + std::to_string(sizeof(UniformBufferObject)));
 	}
 
-	void NazaraRenderer::update(float deltaTime, Concerto::Ecs::Registry& r)
+	void NazaraRenderer::Update(float deltaTime, Concerto::Ecs::Registry& r)
 	{
-		updateEvents();
+		UpdateEvents();
 		Nz::RenderFrame frame = _window.AcquireFrame();
-		_ubo.viewMatrix = Nz::Matrix4f::TransformInverse(viewerPos, _camAngles);
 
 		if (!frame)
 		{
@@ -166,16 +151,26 @@ fn main(vertIn: VertIn) -> VertOut
 
 		if (_uboUpdate)
 		{
-			auto& allocation = frame.GetUploadPool().Allocate(sizeof(UniformBufferObject));
-
-			std::memcpy(allocation.mappedPtr, &_ubo, sizeof(UniformBufferObject));
-
 			frame.Execute([&](Nz::CommandBufferBuilder& builder)
 			{
 				builder.BeginDebugRegion("UBO Update", Nz::Color::Yellow);
 				{
 					builder.PreTransferBarrier();
-					builder.CopyBuffer(allocation, _uniformBuffer.get());
+					for (Entity::Id entity = 0; entity < r.GetEntityCount(); ++entity)
+					{
+						auto& transform = r.GetComponent<Math::Transform>(entity);
+						if (!_ubos.Has(entity))
+						{
+							CreateUbo(entity, transform, frame.GetUploadPool());
+						}
+
+						UpdateUbo(entity, transform);
+						auto& ubo = _ubos[entity];
+						auto& allocation = _allocations[entity];
+						ubo.first.viewMatrix = Nz::Matrix4f::TransformInverse(viewerPos, _camAngles);
+						std::memcpy(allocation.get().mappedPtr, &ubo.first, sizeof(UniformBufferObject));
+						builder.CopyBuffer(allocation.get(), _uniformBuffers[entity].get());
+					}
 					builder.PostTransferBarrier();
 				}
 				builder.EndDebugRegion();
@@ -198,12 +193,12 @@ fn main(vertIn: VertIn) -> VertOut
 				builder.BeginRenderPass(windowRT->GetFramebuffer(frame.GetFramebufferIndex()),
 						windowRT->GetRenderPass(), renderRect, { clearValues[0], clearValues[1] });
 				{
-					for (Entity::Id entity = 0; entity < r.getEntityCount(); ++entity)
+					for (Entity::Id entity = 0; entity < r.GetEntityCount(); ++entity)
 					{
-						auto& transform = r.getComponent<Math::Transform>(entity);
-						auto& meshComp = r.getComponent<Mesh>(entity);
-						Nz::Mesh& mesh = createMeshIfNotExist(meshComp, transform);
-						Nz::Texture& texture = createTextureIfNotExist(meshComp);
+						auto& transform = r.GetComponent<Math::Transform>(entity);
+						auto& meshComp = r.GetComponent<Mesh>(entity);
+						Nz::Mesh& mesh = CreateMeshIfNotExist(entity, meshComp, transform);
+						Nz::Texture& texture = CreateTextureIfNotExist(meshComp);
 						std::shared_ptr<Nz::StaticMesh> sm = std::static_pointer_cast<Nz::StaticMesh>(
 								mesh.GetSubMesh(0));
 						const std::shared_ptr<Nz::VertexBuffer>& meshVB = sm->GetVertexBuffer();
@@ -213,7 +208,7 @@ fn main(vertIn: VertIn) -> VertOut
 						builder.BindIndexBuffer(renderBufferIB, Nz::IndexType::U16);
 						builder.BindPipeline(*_pipeline);
 						builder.BindVertexBuffer(0, renderBufferVB);
-						builder.BindShaderBinding(0, *_viewerShaderBinding);
+						builder.BindShaderBinding(0, *_ubos[entity].second);
 						builder.BindShaderBinding(1, *_textureShaderBinding);
 
 						builder.SetScissor(Nz::Recti{ 0, 0, int(_windowSize.x), int(_windowSize.y) });
@@ -229,36 +224,37 @@ fn main(vertIn: VertIn) -> VertOut
 		frame.Present();
 	}
 
-	void NazaraRenderer::stepUpdate(float deltaTime, Concerto::Ecs::Registry& r)
+	void NazaraRenderer::StepUpdate(float deltaTime, Concerto::Ecs::Registry& r)
 	{
 
 	}
 
-	Nz::Mesh& NazaraRenderer::createMeshIfNotExist(const Mesh& mesh, const Math::Transform& transform)
+	Nz::Mesh&
+	NazaraRenderer::CreateMeshIfNotExist(Entity::Id entity, const Mesh& mesh, const Math::Transform& transform)
 	{
 		std::filesystem::path resourceDir = _assetPath;
-		Nz::MeshParams meshParams;
-		meshParams.bufferFactory = Nz::GetRenderBufferFactory(_device);
-		meshParams.center = true;
-		meshParams.matrix =
-				Nz::Matrix4f::Rotate(Nz::EulerAnglesf(0.f, -90.f, 0.f)) * Nz::Matrix4f::Scale(Nz::Vector3f(0.002f));
-		meshParams.vertexDeclaration = Nz::VertexDeclaration::Get(Nz::VertexLayout::XYZ_Normal_UV);
 		auto meshesIt = _meshes.find((resourceDir / mesh.modelPath).string());
 		if (meshesIt == _meshes.end())
 		{
+			Nz::MeshParams meshParams;
+			meshParams.bufferFactory = Nz::GetRenderBufferFactory(_device);
+			meshParams.center = true;
+			meshParams.matrix =
+					Nz::Matrix4f::Rotate(Nz::EulerAnglesf(0.f, -90.f, 0.f)) * Nz::Matrix4f::Scale(Nz::Vector3f(0.002f));
+			meshParams.vertexDeclaration = Nz::VertexDeclaration::Get(Nz::VertexLayout::XYZ_Normal_UV);
 			auto path = resourceDir / mesh.modelPath;
 			auto meshPtr = Nz::Mesh::LoadFromFile(resourceDir / mesh.modelPath, meshParams);
 			if (!meshPtr)
 			{
-				Logger::error("Fail to load model");
+				Logger::Error("Fail to load model");
 			}
 			meshesIt = _meshes.emplace((resourceDir / mesh.modelPath).string(), meshPtr).first;
-			Logger::debug("Created new mesh " + mesh.modelPath);
+			Logger::Debug("Created new mesh " + mesh.modelPath);
 		}
 		return *meshesIt->second;
 	}
 
-	Nz::Texture& NazaraRenderer::createTextureIfNotExist(const Mesh& mesh)
+	Nz::Texture& NazaraRenderer::CreateTextureIfNotExist(const Mesh& mesh)
 	{
 		std::filesystem::path resourceDir = _assetPath;
 		auto textureName = (resourceDir / mesh.texturePath).string();
@@ -273,26 +269,27 @@ fn main(vertIn: VertIn) -> VertOut
 			auto meshPtr = Nz::Texture::LoadFromFile(resourceDir / mesh.texturePath, texParams);
 			if (!meshPtr)
 			{
-				Logger::error("Fail to load model");
+				Logger::Error("Fail to load model");
 			}
 			textureIt = _textures.emplace(textureName, meshPtr).first;
-			std::shared_ptr<Nz::TextureSampler> textureSampler = _device->InstantiateTextureSampler({});
+			if (!_textureSampler)
+				_textureSampler = _device->InstantiateTextureSampler({});
 			_textureShaderBinding->Update({
 					{
 							0,
 							Nz::ShaderBinding::TextureBinding{
-									textureIt->second.get(), textureSampler.get()
+									textureIt->second.get(), _textureSampler.get()
 							}
 					}
 			});
-			Logger::debug("Created new texture " + mesh.texturePath);
+			Logger::Debug("Created new texture " + mesh.texturePath);
 		}
 		return *textureIt->second;
 	}
 
-	void NazaraRenderer::updateEvents()
+	void NazaraRenderer::UpdateEvents()
 	{
-		Nz::WindowEvent event;
+		Nz::WindowEvent event{};
 		while (_window.PollEvent(&event))
 		{
 			switch (event.type)
@@ -323,8 +320,14 @@ fn main(vertIn: VertIn) -> VertOut
 			case Nz::WindowEventType::Resized:
 			{
 				Nz::Vector2ui windowSize = _window.GetSize();
-				_ubo.projectionMatrix = Nz::Matrix4f::Perspective(Nz::DegreeAnglef(70.f),
+				auto projectionMatrix = Nz::Matrix4f::Perspective(Nz::DegreeAnglef(70.f),
 						float(windowSize.x) / windowSize.y, 0.1f, 1000.f);
+				for (auto& ubo: _ubos)
+				{
+					if (!ubo.has_value())
+						continue;
+					ubo.value().first.projectionMatrix = projectionMatrix;
+				}
 				_uboUpdate = true;
 				break;
 			}
@@ -370,8 +373,45 @@ fn main(vertIn: VertIn) -> VertOut
 		}
 	}
 
-	bool NazaraRenderer::shouldClose() const
+	bool NazaraRenderer::ShouldClose() const
 	{
 		return _shouldClose;
+	}
+
+	void NazaraRenderer::CreateUbo(Entity::Id entity, const Math::Transform& transform, Nz::UploadPool& uploadPool)
+	{
+		UniformBufferObject ubo{};
+		ubo.projectionMatrix = Nz::Matrix4f::Perspective(Nz::DegreeAnglef(70.f),
+				float(_windowSize.x) / float(_windowSize.y),
+				0.1f, 1000.f);
+		Nz::Quaternionf rotation(0, transform.Rotation.X(), transform.Rotation.Y(), transform.Rotation.Z());
+		ubo.viewMatrix = Nz::Matrix4f::Translate(Nz::Vector3f::Backward() * 1);
+		ubo.modelMatrix = Nz::Matrix4f::Transform(
+				Nz::Vector3f(transform.Location.X(), transform.Location.Y(), transform.Location.Z()), rotation);
+		auto pair = std::make_pair(ubo, _basePipelineLayout->AllocateShaderBinding(0));
+		_uniformBuffers.Emplace(entity, _device->InstantiateBuffer(Nz::BufferType::Uniform, sizeof(UniformBufferObject),
+				Nz::BufferUsage::DeviceLocal | Nz::BufferUsage::Dynamic));
+		pair.second->Update({
+				{
+						0,
+						Nz::ShaderBinding::UniformBufferBinding{
+								_uniformBuffers[entity].get(), 0, sizeof(UniformBufferObject)
+						}
+				}
+		});
+		_allocations.Emplace(entity, uploadPool.Allocate(sizeof(UniformBufferObject)));
+		_ubos.Emplace(entity, std::move(pair));
+	}
+
+	void NazaraRenderer::UpdateUbo(Entity::Id entity, const Math::Transform& transform)
+	{
+		auto& ubo = _ubos[entity].first;
+		ubo.projectionMatrix = Nz::Matrix4f::Perspective(Nz::DegreeAnglef(70.f),
+				float(_windowSize.x) / float(_windowSize.y),
+				0.1f, 1000.f);
+		Nz::Quaternionf rotation(0, transform.Rotation.X(), transform.Rotation.Y(), transform.Rotation.Z());
+		ubo.viewMatrix = Nz::Matrix4f::Translate(Nz::Vector3f::Backward() * 1);
+		ubo.modelMatrix = Nz::Matrix4f::Transform(
+				Nz::Vector3f(transform.Location.X(), transform.Location.Y(), transform.Location.Z()), rotation);
 	}
 }

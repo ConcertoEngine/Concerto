@@ -30,14 +30,14 @@ namespace Concerto::Ecs
 
 		~World() = default;
 
-		Registry& getRegistry();
+		Registry& GetRegistry();
 
-		void update(float deltaTime);
+		void Update(float deltaTime);
 
-		void stepUpdate(float deltaTime);
+		void StepUpdate(float deltaTime);
 
 		template<typename T, typename... Args>
-		T& addSystem(Args&& ...args)
+		T& AddSystem(Args&& ...args)
 		{
 			_systems.push_back(std::make_unique<T>(std::forward<Args>(args)...));
 			return (static_cast<T&>(*_systems.back()));

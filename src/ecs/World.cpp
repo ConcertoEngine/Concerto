@@ -7,23 +7,23 @@
 
 namespace Concerto::Ecs
 {
-	void World::update(float deltaTime)
+	void World::Update(float deltaTime)
 	{
 		for (auto& system : _systems)
 		{
-			system->update(deltaTime, _registry);
+			system->Update(deltaTime, _registry);
 		}
 	}
 
-	void World::stepUpdate(float deltaTime)
+	void World::StepUpdate(float deltaTime)
 	{
 		for (auto& system : _systems)
 		{
-			system->stepUpdate(deltaTime, _registry);
+			system->StepUpdate(deltaTime, _registry);
 		}
 	}
 
-	Registry& World::getRegistry()
+	Registry& World::GetRegistry()
 	{
 		return _registry;
 	}

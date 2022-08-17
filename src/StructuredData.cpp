@@ -13,7 +13,7 @@ namespace Concerto
 	StructuredData::StructuredData(const std::string& file)
 	{
 		std::ifstream i(file);
-		_config = getObject(json::parse(i));
+		_config = GetObject(json::parse(i));
 	}
 
 	const Config::Object& StructuredData::getConfig() const
@@ -21,7 +21,7 @@ namespace Concerto
 		return _config;
 	}
 
-	Config::Object StructuredData::getObject(const json& object)
+	Config::Object StructuredData::GetObject(const json& object)
 	{
 		if (!object.is_object())
 			throw std::logic_error("JSON: file should be a JSON object");
@@ -29,9 +29,9 @@ namespace Concerto
 		for (auto& [key, value]: object.items())
 		{
 			if (value.is_object())
-				config.push_back({ key, std::make_shared<Config::Node>(getObject(value)) });
+				config.push_back({ key, std::make_shared<Config::Node>(GetObject(value)) });
 			else if (value.is_array())
-				config.push_back({ key, std::make_shared<Config::Node>(getArray(value)) });
+				config.push_back({ key, std::make_shared<Config::Node>(GetArray(value)) });
 			else if (value.is_string())
 				config.push_back({ key, std::make_shared<Config::Node>(value.get<std::string>()) });
 			else
@@ -40,7 +40,7 @@ namespace Concerto
 		return config;
 	}
 
-	Config::Array StructuredData::getArray(const json& array)
+	Config::Array StructuredData::GetArray(const json& array)
 	{
 		if (!array.is_array())
 			throw std::logic_error("JSON: file should be a JSON array");
@@ -48,9 +48,9 @@ namespace Concerto
 		for (auto& value: array)
 		{
 			if (value.is_object())
-				config.push_back(std::make_shared<Config::Node>(getObject(value)));
+				config.push_back(std::make_shared<Config::Node>(GetObject(value)));
 			else if (value.is_array())
-				config.push_back(std::make_shared<Config::Node>(getArray(value)));
+				config.push_back(std::make_shared<Config::Node>(GetArray(value)));
 			else if (value.is_string())
 				config.push_back(std::make_shared<Config::Node>(value.get<std::string>()));
 			else
@@ -59,7 +59,7 @@ namespace Concerto
 		return config;
 	}
 
-	Config::NodePtr StructuredData::getPrimitive(const json& primitive)
+	Config::NodePtr StructuredData::GetPrimitive(const json& primitive)
 	{
 		if (primitive.is_string())
 			return std::make_shared<Config::Node>(primitive.get<Config::String>());
