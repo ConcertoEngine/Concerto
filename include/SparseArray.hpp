@@ -8,6 +8,8 @@
 #include <stdexcept>
 #include <memory>
 
+#ifndef CONCERTO_SPARSEARRAY_HPP
+#define CONCERTO_SPARSEARRAY_HPP
 /**
  * @brief Sparse array
  * A container which offers fixed time access to individual elements in any order, its indices can contain gaps.
@@ -100,8 +102,8 @@ public:
 	{
 		if (index >= _container.size())
 			throw std::out_of_range("Index out of range");
-		if (!has(index))
-			throw std::runtime_error("Index has no value");
+		if (!Has(index))
+			throw std::runtime_error("Index Has no value");
 		return _container[index].value();
 	}
 
@@ -114,8 +116,8 @@ public:
 	{
 		if (index >= _container.size())
 			throw std::out_of_range("Index out of range");
-		if (!has(index))
-			throw std::runtime_error("Index has no value");
+		if (!Has(index))
+			throw std::runtime_error("Index Has no value");
 		return _container[index].value();
 	}
 
@@ -126,7 +128,7 @@ public:
 	 * @return
 	 */
 	template<typename... Args>
-	reference_type emplace(size_type index, Args&& ... args)
+	reference_type Emplace(size_type index, Args&& ... args)
 	{
 		if (index >= _container.size())
 			_container.resize(index + 1);
@@ -138,7 +140,7 @@ public:
 	 * @brief Removes the element at specified index from the %SparseArray.
 	 * @param index The index of the element to be removed.
 	 */
-	void erase(size_type index)
+	void Erase(size_type index)
 	{
 		if (index >= _container.size() || !_container[index].has_value())
 			throw std::out_of_range("Index out of range");
@@ -147,9 +149,9 @@ public:
 
 	/**
 	 * @param index The index of the element to be tested.
-	 * @return Returns true if the element at specified location has a value.
+	 * @return Returns true if the element at specified location Has a value.
 	 */
-	bool has(size_type index) const
+	bool Has(size_type index) const
 	{
 		return index < _container.size() && _container[index].has_value();
 	}
@@ -157,3 +159,5 @@ public:
 private:
 	container_type _container;
 };
+
+#endif // CONCERTO_SPARSEARRAY_HPP

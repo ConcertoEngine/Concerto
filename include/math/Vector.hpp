@@ -63,6 +63,24 @@ namespace Concerto::Math
 			return const_cast<T&>(_data[2]);
 		}
 
+		[[nodiscard]] T& X() noexcept
+		{
+			static_assert(Size >= 1, "Error : Getting the X value require the vector size 1 or more");
+			return _data[0];
+		}
+
+		[[nodiscard]] T& Y() noexcept
+		{
+			static_assert(Size >= 2, "Error : Getting the Y value require the vector size 2 or more");
+			return _data[1];
+		}
+
+		[[nodiscard]] T& Z() noexcept
+		{
+			static_assert(Size >= 3, "Error : Getting the Z value require the vector size 3 or more");
+			return _data[2];
+		}
+
 		constexpr Vector operator+(const Vector& vector) const noexcept;
 
 		constexpr Vector operator+(T val) const noexcept;

@@ -20,7 +20,7 @@ namespace Concerto::Ecs
 	public:
 		World() = default;
 
-		World(World&&)  noexcept = default;
+		World(World&&) noexcept = default;
 
 		World(const World&) = delete;
 
@@ -30,10 +30,18 @@ namespace Concerto::Ecs
 
 		~World() = default;
 
-		Registry& getRegistry();
-		void update(float deltaTime);
+		Registry& GetRegistry();
 
-		void stepUpdate(float deltaTime);
+		void Update(float deltaTime);
+
+		void StepUpdate(float deltaTime);
+
+		template<typename T, typename... Args>
+		T& AddSystem(Args&& ...args)
+		{
+			_systems.push_back(std::make_unique<T>(std::forward<Args>(args)...));
+			return (static_cast<T&>(*_systems.back()));
+		}
 
 	private:
 		Concerto::Ecs::Registry _registry;

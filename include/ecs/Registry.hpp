@@ -64,7 +64,7 @@ namespace Concerto::Ecs
 		 * @brief Creates a new entity.
 		 * @return The new entity.
 		 */
-		Entity::Id createEntity()
+		Entity::Id CreateEntity()
 		{
 			Entity::Id id = _nextId++;
 			return id;
@@ -79,15 +79,15 @@ namespace Concerto::Ecs
 		 * @return A reference to the component
 		 */
 		template<typename Comp, typename... Args>
-		Comp& emplaceComponent(Entity::Id entity, Args&& ...args)
+		Comp& EmplaceComponent(Entity::Id entity, Args&& ...args)
 		{
-			Component::Id id = Component::getId<Comp>();
-			if (_components.find(entity) == _components.end())
+			Component::Id id = Component::GetId<Comp>();
+			if (_components.find(id) == _components.end())
 			{
 				auto it = _components.emplace(id, map_element());
-				return std::any_cast<Comp&>(it.first->second.emplace(entity, std::forward<Args>(args)...));
+				return std::any_cast<Comp&>(it.first->second.Emplace(entity, std::forward<Args>(args)...));
 			}
-			auto& sparseArrayElement = _components.at(id).emplace(entity, std::forward<Args>(args)...);
+			auto& sparseArrayElement = _components.at(id).Emplace(entity, std::forward<Args>(args)...);
 			return std::any_cast<Comp&>(sparseArrayElement);
 		}
 
@@ -97,12 +97,12 @@ namespace Concerto::Ecs
 		 * @param entity The entity to remove the component from
 		 */
 		template<typename Comp>
-		void removeComponent(Entity::Id entity)
+		void RemoveComponent(Entity::Id entity)
 		{
-			Component::Id id = Component::getId<Comp>();
+			Component::Id id = Component::GetId<Comp>();
 			if (_components.find(id) != _components.end())
 			{
-				_components[id].erase(entity);
+				_components[id].Erase(entity);
 			}
 			else throw std::runtime_error("Component not found");
 		}
@@ -114,13 +114,13 @@ namespace Concerto::Ecs
 		 * @return A reference to the component
 		 */
 		template<class Comp>
-		Comp& getComponent(Entity::Id entity)
+		Comp& GetComponent(Entity::Id entity)
 		{
-			Component::Id id = Component::getId<Comp>();
+			Component::Id id = Component::GetId<Comp>();
 			auto it = _components.find(id);
 			if (it == _components.end())
 				throw std::runtime_error("Component not found");
-			if (!it->second.has(entity))
+			if (!it->second.Has(entity))
 				throw std::runtime_error("Component not found");
 			return std::any_cast<Comp&>(it->second[entity]);
 		}
@@ -128,14 +128,14 @@ namespace Concerto::Ecs
 		/**
 		 * @tparam Comp The component type
 		 * @param entity The entity to check for the component
-		 * @return True if the entity has the component, false otherwise
+		 * @return True if the entity Has the component, false otherwise
 		 */
 		template<typename Comp>
-		bool hasComponent(Entity::Id entity) const
+		[[nodiscard]] bool HasComponent(Entity::Id entity) const
 		{
-			Component::Id id = Component::getId<Comp>();
+			Component::Id id = Component::GetId<Comp>();
 			auto it = _components.find(id);
-			return it != _components.end() && it->second.has(entity);
+			return it != _components.end() && it->second.Has(entity);
 		}
 
 		/**
@@ -143,7 +143,7 @@ namespace Concerto::Ecs
 		 * @tparam Comp The component type
 		 * @return The number of entities
 		 */
-		Entity::Id getEntityCount() const
+		[[nodiscard]] Entity::Id GetEntityCount() const
 		{
 			return _nextId;
 		}

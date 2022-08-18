@@ -14,40 +14,40 @@ using namespace Concerto;
 TEST(Registry, AddEntity)
 {
 	Registry r;
-	Entity::Id entity = r.createEntity();
+	Entity::Id entity = r.CreateEntity();
 	ASSERT_EQ(0, entity);
-	entity = r.createEntity();
+	entity = r.CreateEntity();
 	ASSERT_EQ(1, entity);
 }
 
 TEST(Registry, addComponent)
 {
 	Registry r;
-	Entity::Id entity = r.createEntity();
+	Entity::Id entity = r.CreateEntity();
 	Transform transform(Vector3f(0.f, 0.f, 0.f),  Vector3f(0.f, 0.f, 0.f), Vector3f(0.f, 0.f, 0.f));
-	auto &comp = r.emplaceComponent<Transform>(entity, transform);
+	auto &comp = r.EmplaceComponent<Transform>(entity, transform);
 	ASSERT_EQ(comp, transform);
 }
 
 TEST(Registry, getComponent)
 {
 	Registry r;
-	Entity::Id entity = r.createEntity();
+	Entity::Id entity = r.CreateEntity();
 	Transform transform(Vector3f(0.f, 0.f, 0.f),  Vector3f(0.f, 0.f, 0.f), Vector3f(0.f, 0.f, 0.f));
-	auto &comp = r.emplaceComponent<Transform>(entity, transform);
-	auto &comp2 = r.getComponent<Transform>(entity);
+	auto &comp = r.EmplaceComponent<Transform>(entity, transform);
+	auto &comp2 = r.GetComponent<Transform>(entity);
 	ASSERT_EQ(&comp, &comp2);
 }
 
 TEST(Registry, removeComponent)
 {
 	Registry r;
-	Entity::Id entity = r.createEntity();
+	Entity::Id entity = r.CreateEntity();
 	Transform transform(Vector3f(0.f, 0.f, 0.f),  Vector3f(0.f, 0.f, 0.f), Vector3f(0.f, 0.f, 0.f));
-	auto& comp = r.emplaceComponent<Transform>(entity, transform);
-	r.removeComponent<Transform>(entity);
+	auto& comp = r.EmplaceComponent<Transform>(entity, transform);
+	r.RemoveComponent<Transform>(entity);
 	try {
-		auto& comp2 = r.getComponent<Transform>(entity);
+		auto& comp2 = r.GetComponent<Transform>(entity);
 		FAIL();
 	}
 	catch (const std::runtime_error &e) {
@@ -58,10 +58,10 @@ TEST(Registry, removeComponent)
 TEST(Registry, hasComponent)
 {
 	Registry r;
-	Entity::Id entity = r.createEntity();
+	Entity::Id entity = r.CreateEntity();
 	Transform transform(Vector3f(0.f, 0.f, 0.f),  Vector3f(0.f, 0.f, 0.f), Vector3f(0.f, 0.f, 0.f));
-	auto& comp = r.emplaceComponent<Transform>(entity, transform);
-	ASSERT_TRUE(r.hasComponent<Transform>(entity));
-	r.removeComponent<Transform>(entity);
-	ASSERT_FALSE(r.hasComponent<Transform>(entity));
+	auto& comp = r.EmplaceComponent<Transform>(entity, transform);
+	ASSERT_TRUE(r.HasComponent<Transform>(entity));
+	r.RemoveComponent<Transform>(entity);
+	ASSERT_FALSE(r.HasComponent<Transform>(entity));
 }
