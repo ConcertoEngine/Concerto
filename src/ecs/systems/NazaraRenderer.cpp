@@ -6,7 +6,7 @@
 
 #include "NazaraRenderer.hpp"
 #include "Logger.hpp"
-
+#include "Input.hpp"
 
 #include "components/Camera.hpp"
 
@@ -132,7 +132,7 @@ fn main(vertIn: VertIn) -> VertOut
 		pipelineVertexBuffer.binding = 0;
 		pipelineVertexBuffer.declaration = Nz::VertexDeclaration::Get(Nz::VertexLayout::XYZ_Normal_UV);
 		_pipeline = _device->InstantiateRenderPipeline(pipelineInfo);
-		const std::shared_ptr<Nz::RenderDevice>& renderDevice = _window.GetRenderDevice();
+		const std::shared_ptr <Nz::RenderDevice>& renderDevice = _window.GetRenderDevice();
 		_commandPool = renderDevice->InstantiateCommandPool(Nz::QueueType::Graphics);
 		_window.EnableEventPolling(true);
 		Nz::Mouse::SetRelativeMouseMode(true);
@@ -199,9 +199,9 @@ fn main(vertIn: VertIn) -> VertOut
 						auto& meshComp = r.GetComponent<Mesh>(entity);
 						Nz::Mesh& mesh = CreateMeshIfNotExist(entity, meshComp, transform);
 						Nz::Texture& texture = CreateTextureIfNotExist(meshComp);
-						std::shared_ptr<Nz::StaticMesh> sm = std::static_pointer_cast<Nz::StaticMesh>(
+						std::shared_ptr <Nz::StaticMesh> sm = std::static_pointer_cast<Nz::StaticMesh>(
 								mesh.GetSubMesh(0));
-						const std::shared_ptr<Nz::VertexBuffer>& meshVB = sm->GetVertexBuffer();
+						const std::shared_ptr <Nz::VertexBuffer>& meshVB = sm->GetVertexBuffer();
 						const std::shared_ptr<const Nz::IndexBuffer>& meshIB = sm->GetIndexBuffer();
 						auto& renderBufferVB = static_cast<Nz::RenderBuffer&>(*meshVB->GetBuffer());
 						auto& renderBufferIB = static_cast<Nz::RenderBuffer&>(*meshIB->GetBuffer());
@@ -290,33 +290,17 @@ fn main(vertIn: VertIn) -> VertOut
 	void NazaraRenderer::UpdateEvents()
 	{
 		Nz::WindowEvent event{};
+		std::vector <Event> events;
 		while (_window.PollEvent(&event))
 		{
 			switch (event.type)
 			{
 			case Nz::WindowEventType::Quit:
+			{
 				_window.Close();
 				_shouldClose = true;
 				break;
-
-			case Nz::WindowEventType::MouseMoved: // La souris a bougé
-			{
-				// Gestion de la caméra free-fly (Rotation)
-				float sensitivity = 0.3f; // Sensibilité de la souris
-
-				// On modifie l'angle de la caméra grâce au déplacement relatif sur X de la souris
-				_camAngles.yaw = _camAngles.yaw - event.mouseMove.deltaX * sensitivity;
-				_camAngles.yaw.Normalize();
-
-				// Idem, mais pour éviter les problèmes de calcul de la matrice de vue, on restreint les angles
-				_camAngles.pitch = Nz::Clamp(_camAngles.pitch - event.mouseMove.deltaY * sensitivity, -89.f, 89.f);
-
-				_camQuat = _camAngles;
-
-				_uboUpdate = true;
-				break;
 			}
-
 			case Nz::WindowEventType::Resized:
 			{
 				Nz::Vector2ui windowSize = _window.GetSize();
@@ -331,46 +315,94 @@ fn main(vertIn: VertIn) -> VertOut
 				_uboUpdate = true;
 				break;
 			}
-
+			case Nz::WindowEventType::KeyPressed:
+			{
+				auto& e = events.emplace_back();
+				e.type = Event::Key;
+				KeyEvent keyEvent{};
+				keyEvent.key = (Key)event.key.virtualKey;
+				keyEvent.triggerType = TriggerType::Pressed;
+				e.data = keyEvent;
+				break;
+			}
+			case Nz::WindowEventType::KeyReleased:
+			{
+				auto& e = events.emplace_back();
+				e.type = Event::Key;
+				KeyEvent keyEvent{};
+				keyEvent.key = (Key)event.key.scancode;
+				keyEvent.triggerType = TriggerType::Released;
+				e.data = keyEvent;
+				break;
+			}
+			case Nz::WindowEventType::MouseButtonPressed:
+			{
+				auto& e = events.emplace_back();
+				e.type = Event::Mouse;
+				MouseEvent mouseEvent{};
+				MouseButton mouseButton{};
+				mouseButton.button = (MouseButton::Button)event.mouseButton.button;
+				mouseButton.clickCount = event.mouseButton.clickCount;
+				mouseButton.x = event.mouseButton.x;
+				mouseButton.y = event.mouseButton.y;
+				mouseButton.triggerType = TriggerType::Pressed;
+				mouseEvent.button = mouseButton;
+				mouseEvent.type = MouseEvent::Button;
+				e.data = mouseEvent;
+				break;
+			}
+			case Nz::WindowEventType::MouseButtonReleased:
+			{
+				auto& e = events.emplace_back();
+				e.type = Event::Mouse;
+				MouseEvent mouseEvent{};
+				MouseButton mouseButton{};
+				mouseButton.button = (MouseButton::Button)event.mouseButton.button;
+				mouseButton.clickCount = 0;
+				mouseButton.x = event.mouseButton.x;
+				mouseButton.y = event.mouseButton.y;
+				mouseButton.triggerType = TriggerType::Released;
+				mouseEvent.button = mouseButton;
+				mouseEvent.type = MouseEvent::Button;
+				e.data = mouseEvent;
+				break;
+			}
+			case Nz::WindowEventType::MouseWheelMoved:
+			{
+				auto& e = events.emplace_back();
+				e.type = Event::Mouse;
+				MouseEvent mouseEvent{};
+				MouseWheel mouseWheel{};
+				mouseWheel.x = event.mouseWheel.x;
+				mouseWheel.y = event.mouseWheel.y;
+				mouseWheel.delta = event.mouseWheel.delta;
+				mouseEvent.type = MouseEvent::Wheel;
+				mouseEvent.mouseWheel = mouseWheel;
+				e.data = mouseEvent;
+				break;
+			}
+			case Nz::WindowEventType::MouseMoved:
+			{
+				auto& e = events.emplace_back();
+				e.type = Event::Mouse;
+				MouseEvent mouseEvent{};
+				MouseMove mouseMove{};
+				mouseMove.x = event.mouseMove.x;
+				mouseMove.y = event.mouseMove.y;
+				mouseMove.deltaX = event.mouseMove.deltaX;
+				mouseMove.deltaY = event.mouseMove.deltaY;
+				mouseEvent.type = MouseEvent::Moved;
+				mouseEvent.mouseMove = mouseMove;
+				e.data = mouseEvent;
+				break;
+			}
 			default:
 				break;
 			}
 		}
-		if (updateClock.GetMilliseconds() > 1000 / 60)
-		{
-			float cameraSpeed = 2.f * updateClock.GetSeconds();
-			updateClock.Restart();
+		Input::Instance().Trigger(events);
+		_uboUpdate = true;
 
-			if (Nz::Keyboard::IsKeyPressed(Nz::Keyboard::VKey::Up) || Nz::Keyboard::IsKeyPressed(Nz::Keyboard::VKey::Z))
-				viewerPos += _camQuat * Nz::Vector3f::Forward() * cameraSpeed;
-
-			// Si la flèche du bas ou la touche S est pressée, on recule
-			if (Nz::Keyboard::IsKeyPressed(Nz::Keyboard::VKey::Down) ||
-				Nz::Keyboard::IsKeyPressed(Nz::Keyboard::VKey::S))
-				viewerPos += _camQuat * Nz::Vector3f::Backward() * cameraSpeed;
-
-			// Etc...
-			if (Nz::Keyboard::IsKeyPressed(Nz::Keyboard::VKey::Left) ||
-				Nz::Keyboard::IsKeyPressed(Nz::Keyboard::VKey::Q))
-				viewerPos += _camQuat * Nz::Vector3f::Left() * cameraSpeed;
-
-			// Etc...
-			if (Nz::Keyboard::IsKeyPressed(Nz::Keyboard::VKey::Right) ||
-				Nz::Keyboard::IsKeyPressed(Nz::Keyboard::VKey::D))
-				viewerPos += _camQuat * Nz::Vector3f::Right() * cameraSpeed;
-
-			// Majuscule pour monter, notez l'utilisation d'une direction globale (Non-affectée par la rotation)
-			if (Nz::Keyboard::IsKeyPressed(Nz::Keyboard::VKey::LShift) ||
-				Nz::Keyboard::IsKeyPressed(Nz::Keyboard::VKey::RShift))
-				viewerPos += Nz::Vector3f::Up() * cameraSpeed;
-
-			// Contrôle (Gauche ou droite) pour descendre dans l'espace global, etc...
-			if (Nz::Keyboard::IsKeyPressed(Nz::Keyboard::VKey::LControl) ||
-				Nz::Keyboard::IsKeyPressed(Nz::Keyboard::VKey::RControl))
-				viewerPos += Nz::Vector3f::Down() * cameraSpeed;
-
-			_uboUpdate = true;
-		}
 	}
 
 	bool NazaraRenderer::ShouldClose() const
