@@ -121,8 +121,6 @@ fn main(vertIn: VertIn) -> VertOut
 		textureBinding.type = Nz::ShaderBindingType::Texture;
 		_renderPipelineLayout = _device->InstantiateRenderPipelineLayout(std::move(_pipelineLayoutInfo));
 		_textureShaderBinding = _renderPipelineLayout->AllocateShaderBinding(1);
-//		_uniformBuffer = _device->InstantiateBuffer(Nz::BufferType::Uniform, sizeof(UniformBufferObject),
-//				Nz::BufferUsage::DeviceLocal | Nz::BufferUsage::Dynamic);
 		Nz::RenderPipelineInfo pipelineInfo;
 		pipelineInfo.pipelineLayout = _renderPipelineLayout;
 		pipelineInfo.faceCulling = true;
@@ -132,10 +130,34 @@ fn main(vertIn: VertIn) -> VertOut
 		pipelineVertexBuffer.binding = 0;
 		pipelineVertexBuffer.declaration = Nz::VertexDeclaration::Get(Nz::VertexLayout::XYZ_Normal_UV);
 		_pipeline = _device->InstantiateRenderPipeline(pipelineInfo);
-		const std::shared_ptr <Nz::RenderDevice>& renderDevice = _window.GetRenderDevice();
+		const std::shared_ptr<Nz::RenderDevice>& renderDevice = _window.GetRenderDevice();
 		_commandPool = renderDevice->InstantiateCommandPool(Nz::QueueType::Graphics);
 		_window.EnableEventPolling(true);
 		Nz::Mouse::SetRelativeMouseMode(true);
+		Input::Instance().Register("MouseMove", MouseEvent::Type::Moved, [&](const MouseEvent& e)
+		{
+			float sensitivity = 0.3f; // Sensibilité de la souris
+			_camAngles.yaw = _camAngles.yaw - e.mouseMove.deltaX * sensitivity;
+			_camAngles.yaw.Normalize();
+			_camAngles.pitch = Nz::Clamp(_camAngles.pitch - e.mouseMove.deltaY * sensitivity, -89.f, 89.f);
+			_camQuat = _camAngles;
+		});
+		Input::Instance().Register("Forward", Key::Z, TriggerType::Pressed, [&]()
+		{
+			viewerPos += _camQuat * Nz::Vector3f::Forward() * 1 / 60;
+		});
+		Input::Instance().Register("Backward", Key::S, TriggerType::Pressed, [&]()
+		{
+			viewerPos += _camQuat * Nz::Vector3f::Backward() * 1 / 60;
+		});
+		Input::Instance().Register("Left", Key::Q, TriggerType::Pressed, [&]()
+		{
+			viewerPos += _camQuat * Nz::Vector3f::Left() * 1 / 60;
+		});
+		Input::Instance().Register("Right", Key::D, TriggerType::Pressed, [&]()
+		{
+			viewerPos += _camQuat * Nz::Vector3f::Right() * 1 / 60;
+		});
 	}
 
 	void NazaraRenderer::Update(float deltaTime, Concerto::Ecs::Registry& r)
@@ -149,35 +171,30 @@ fn main(vertIn: VertIn) -> VertOut
 			return;
 		}
 
-		if (_uboUpdate)
+		frame.Execute([&](Nz::CommandBufferBuilder& builder)
 		{
-			frame.Execute([&](Nz::CommandBufferBuilder& builder)
+			builder.BeginDebugRegion("UBO Update", Nz::Color::Yellow);
 			{
-				builder.BeginDebugRegion("UBO Update", Nz::Color::Yellow);
+				builder.PreTransferBarrier();
+				for (Entity::Id entity = 0; entity < r.GetEntityCount(); ++entity)
 				{
-					builder.PreTransferBarrier();
-					for (Entity::Id entity = 0; entity < r.GetEntityCount(); ++entity)
+					auto& transform = r.GetComponent<Math::Transform>(entity);
+					if (!_ubos.Has(entity))
 					{
-						auto& transform = r.GetComponent<Math::Transform>(entity);
-						if (!_ubos.Has(entity))
-						{
-							CreateUbo(entity, transform, frame.GetUploadPool());
-						}
-
-						UpdateUbo(entity, transform);
-						auto& ubo = _ubos[entity];
-						auto& allocation = _allocations[entity];
-						ubo.first.viewMatrix = Nz::Matrix4f::TransformInverse(viewerPos, _camAngles);
-						std::memcpy(allocation.get().mappedPtr, &ubo.first, sizeof(UniformBufferObject));
-						builder.CopyBuffer(allocation.get(), _uniformBuffers[entity].get());
+						CreateUbo(entity, transform, frame.GetUploadPool());
 					}
-					builder.PostTransferBarrier();
-				}
-				builder.EndDebugRegion();
-			}, Nz::QueueType::Transfer);
 
-			_uboUpdate = false;
-		}
+					UpdateUbo(entity, transform);
+					auto& ubo = _ubos[entity];
+					auto& allocation = _allocations[entity];
+					ubo.first.viewMatrix = Nz::Matrix4f::TransformInverse(viewerPos, _camAngles);
+					std::memcpy(allocation.get().mappedPtr, &ubo.first, sizeof(UniformBufferObject));
+					builder.CopyBuffer(allocation.get(), _uniformBuffers[entity].get());
+				}
+				builder.PostTransferBarrier();
+			}
+			builder.EndDebugRegion();
+		}, Nz::QueueType::Transfer);
 		const Nz::RenderTarget* windowRT = _window.GetRenderTarget();
 		frame.Execute([&](Nz::CommandBufferBuilder& builder)
 		{
@@ -199,9 +216,9 @@ fn main(vertIn: VertIn) -> VertOut
 						auto& meshComp = r.GetComponent<Mesh>(entity);
 						Nz::Mesh& mesh = CreateMeshIfNotExist(entity, meshComp, transform);
 						Nz::Texture& texture = CreateTextureIfNotExist(meshComp);
-						std::shared_ptr <Nz::StaticMesh> sm = std::static_pointer_cast<Nz::StaticMesh>(
+						std::shared_ptr<Nz::StaticMesh> sm = std::static_pointer_cast<Nz::StaticMesh>(
 								mesh.GetSubMesh(0));
-						const std::shared_ptr <Nz::VertexBuffer>& meshVB = sm->GetVertexBuffer();
+						const std::shared_ptr<Nz::VertexBuffer>& meshVB = sm->GetVertexBuffer();
 						const std::shared_ptr<const Nz::IndexBuffer>& meshIB = sm->GetIndexBuffer();
 						auto& renderBufferVB = static_cast<Nz::RenderBuffer&>(*meshVB->GetBuffer());
 						auto& renderBufferIB = static_cast<Nz::RenderBuffer&>(*meshIB->GetBuffer());
@@ -290,7 +307,7 @@ fn main(vertIn: VertIn) -> VertOut
 	void NazaraRenderer::UpdateEvents()
 	{
 		Nz::WindowEvent event{};
-		std::vector <Event> events;
+		std::vector<Event> events;
 		while (_window.PollEvent(&event))
 		{
 			switch (event.type)
@@ -312,7 +329,6 @@ fn main(vertIn: VertIn) -> VertOut
 						continue;
 					ubo.value().first.projectionMatrix = projectionMatrix;
 				}
-				_uboUpdate = true;
 				break;
 			}
 			case Nz::WindowEventType::KeyPressed:
@@ -401,8 +417,6 @@ fn main(vertIn: VertIn) -> VertOut
 			}
 		}
 		Input::Instance().Trigger(events);
-		_uboUpdate = true;
-
 	}
 
 	bool NazaraRenderer::ShouldClose() const

@@ -16,6 +16,7 @@
 #include "Transform.hpp"
 #include "SparseArray.hpp"
 #include "systems/ASystem.hpp"
+#include "NazaraEvent.hpp"
 
 #include "Nazara/Core.hpp"
 #include "Nazara/Math.hpp"
@@ -62,10 +63,8 @@ namespace Concerto::Ecs::System
 
 		std::string _assetPath;
 		UniformBufferObject _ubo;
-		bool _uboUpdate = true;
 		Nz::EulerAnglesf _camAngles;
 		Nz::Quaternionf _camQuat;
-		Nz::Clock updateClock;
 		Nz::Vector3f viewerPos = Nz::Vector3f::Zero();
 
 		Nz::Renderer::Config _rendererConfig;
