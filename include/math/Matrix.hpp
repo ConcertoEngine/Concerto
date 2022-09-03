@@ -14,13 +14,14 @@ namespace Concerto::Math
 	{
 	public:
 		template<typename ...Args>
-		constexpr explicit Matrix(Args&&... args)
+		constexpr explicit Matrix(Args&& ... args)
 		{
-			static_assert(sizeof...(args) == Rows * Columns, "Error : The number of arguments doesn't match the matrix size");
-			_data = {args...};
+			static_assert(sizeof...(args) == Rows * Columns,
+					"Error : The number of arguments doesn't match the matrix size");
+			_data = { args... };
 		}
 
-		constexpr Matrix() : _data{0}
+		constexpr Matrix() : _data{ 0 }
 		{
 		}
 
@@ -390,9 +391,51 @@ namespace Concerto::Math
 			return *this;
 		}
 
+		/**
+		 * @brief Compare the current matrix with the given matrix.
+		 * @param other The matrix to compare.
+		 * @return True if the current matrix is equal to the given matrix, false otherwise.
+		 */
+		constexpr bool operator==(const Matrix<T, Rows, Columns> &other) const
+		{
+			for (std::size_t i = 0; i < Rows; ++i)
+			{
+				for (std::size_t j = 0; j < Columns; ++j)
+				{
+					if (GetElement(i, j) != other.GetElement(i, j))
+					{
+						return false;
+					}
+				}
+			}
+			return true;
+		}
+
+		/**
+		 * @brief Compare the current matrix with the given matrix.
+		 * @param other The matrix to compare.
+		 * @return False if the current matrix is equal to the given matrix, true otherwise.
+		 */
+		constexpr bool operator!=(const Matrix<T, Rows, Columns> &other) const
+		{
+			return !(*this == other);
+		}
 	private:
 		std::array<T, Rows * Columns> _data;
 	};
 
+	// Aliases
+
+	using Matrix4f = Matrix<float, 4, 4>;
+	using Matrix3f = Matrix<float, 3, 3>;
+	using Matrix2f = Matrix<float, 2, 2>;
+
+	using Matrix4d = Matrix<double, 4, 4>;
+	using Matrix3d = Matrix<double, 3, 3>;
+	using Matrix2d = Matrix<double, 2, 2>;
+
+	using Matrix4i = Matrix<int, 4, 4>;
+	using Matrix3i = Matrix<int, 3, 3>;
+	using Matrix2i = Matrix<int, 2, 2>;
 }
 #endif //CONCERTO_MATRIX_HPP
