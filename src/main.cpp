@@ -4,10 +4,11 @@
 #include "Registry.hpp"
 #include "Entity.hpp"
 #include "Transform.hpp"
-#include "ecs/systems/NazaraRenderer/NazaraRenderer.hpp"
+#include "NazaraRenderer.hpp"
 #include "ecs/World.hpp"
 #include "StructuredData.hpp"
 #include "Input.hpp"
+#include "Matrix.hpp"
 
 using namespace Concerto::Ecs;
 using namespace Concerto;
@@ -31,7 +32,7 @@ int main()
 		mesh.modelPath = "spaceship.obj";
 		mesh.texturePath = "diffuse.png";
 		auto& meshComp = r.EmplaceComponent<Mesh>(entity, std::move(mesh));
-
+		Matrix<float,4,4> m;
 		while (!renderer.ShouldClose())
 		{
 			world.Update(1.f / 60.f);
