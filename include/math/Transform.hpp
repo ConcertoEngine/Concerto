@@ -12,18 +12,17 @@ namespace Concerto::Math
 	class Transform
 	{
 	public:
-
+		Transform() = default;
 		Transform(const Vector3f& location, const Quaternionf& rotation, const Vector3f& scale) :
 				Location(location),
 				Rotation(rotation),
 				Scale(scale)
 		{
 		}
-
 		Transform(Transform&&) = default;
-
 		Transform(const Transform&) = default;
-
+		Transform& operator=(Transform&&) = default;
+		Transform& operator=(const Transform&) = default;
 		~Transform() = default;
 
 		void translate(float x, float y, float z);
