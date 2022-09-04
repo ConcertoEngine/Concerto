@@ -5,6 +5,7 @@
 #ifndef CONCERTO_TRANSFORM_HPP
 #define CONCERTO_TRANSFORM_HPP
 #include "Vector.hpp"
+#include "Quaternion.hpp"
 
 namespace Concerto::Math
 {
@@ -12,7 +13,7 @@ namespace Concerto::Math
 	{
 	public:
 
-		Transform(const Vector3f& location, const Vector3f& rotation, const Vector3f& scale) :
+		Transform(const Vector3f& location, const Quaternionf& rotation, const Vector3f& scale) :
 				Location(location),
 				Rotation(rotation),
 				Scale(scale)
@@ -30,7 +31,7 @@ namespace Concerto::Math
 		void translate(const Vector3f& vec);
 		bool operator==(const Transform& other) const;
 		Vector3f Location;
-		Vector3f Rotation; // TODO Quaternion
+		Quaternionf Rotation;
 		Vector3f Scale;
 	};
 }
