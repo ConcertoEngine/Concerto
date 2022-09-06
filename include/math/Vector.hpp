@@ -299,7 +299,7 @@ namespace Concerto::Math
 			{
 				result[i] = 0;
 			}
-			result[Size] = 1;
+			result[Size - 1] = -1;
 			return result;
 		}
 
@@ -314,7 +314,7 @@ namespace Concerto::Math
 			{
 				result[i] = 0;
 			}
-			result[Size] = -1;
+			result[Size - 1] = 1;
 			return result;
 		}
 
