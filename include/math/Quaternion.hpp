@@ -5,6 +5,8 @@
 #ifndef CONCERTO_QUATERNION_H
 #define CONCERTO_QUATERNION_H
 
+#include <iostream>
+#include "Algorithm.hpp"
 #include "Vector.hpp"
 
 namespace Concerto::Math
@@ -23,7 +25,7 @@ namespace Concerto::Math
 		 * @param z The z axis
 		 * @param w The w scalar
 		 */
-		constexpr Quaternion(T x, T y, T z, T w) noexcept: _scalar(w), _vector( x, y, z)
+		constexpr Quaternion(T x, T y, T z, T w) noexcept: _scalar(w), _vector(x, y, z)
 		{
 
 		}
@@ -37,6 +39,45 @@ namespace Concerto::Math
 		constexpr Quaternion(const Vector3<T>& vector, T scalar) noexcept: _scalar(scalar), _vector(vector)
 		{
 
+		}
+
+		/**
+		 * @brief Assign a new value to this quaternion
+		 * @param vector The vector
+		 * @return Quaternion& A reference to this quaternion
+		 */
+		Quaternion<T>& operator=(const Vector3<T>& vector) noexcept
+		{
+			Set(vector.X(), vector.Y(), vector.Z());
+			return *this;
+		}
+
+		/**
+		 * @brief Assign a new value to this quaternion
+		 */
+		void Set(T x, T y, T z) noexcept
+		{
+			T cosX = std::cos(ToRadians(x / 2));
+			T cosY = std::cos(ToRadians(y / 2));
+			T cosZ = std::cos(ToRadians(z / 2));
+
+			T sinX = std::sin(ToRadians(x / 2));
+			T sinY = std::sin(ToRadians(y / 2));
+			T sinZ = std::sin(ToRadians(z / 2));
+
+			_scalar = cosX * cosY * cosZ - sinX * sinY * sinZ;
+			_vector.X() = sinX * cosY * cosZ + cosX * sinY * sinZ;
+			_vector.Y() = cosX * sinY * cosZ - sinX * cosY * sinZ;
+			_vector.Z() = cosX * cosY * sinZ + sinX * sinY * cosZ;
+		}
+
+		/**
+		 * @brief Get the w scalar
+		 * @return The reference to the w scalar
+		 */
+		T& W() noexcept
+		{
+			return _scalar;
 		}
 
 		/**
@@ -243,6 +284,7 @@ namespace Concerto::Math
 		{
 			return _vector != other._vector || _scalar != other._scalar;
 		}
+
 	private:
 		T _scalar;
 		Vector3<T> _vector;
@@ -251,6 +293,14 @@ namespace Concerto::Math
 	// Aliases
 	using Quaternionf = Quaternion<float>;
 	using Quaterniond = Quaternion<double>;
+
+	template<typename T>
+	std::ostream& operator<<(std::ostream& stream, const Quaternion<T>& quaternion) noexcept
+	{
+		stream << "Quaternion(X: " << quaternion.X() << ", Y: " << quaternion.Y() << ", Z: " << quaternion.Z()
+			   << ", W: " << quaternion.W() << ")";
+		return stream;
+	}
 }
 
 #endif //CONCERTO_QUATERNION_H
