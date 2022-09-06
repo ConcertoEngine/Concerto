@@ -6,6 +6,7 @@
 #define CONCERTO_VECTOR_HPP
 
 #include <array>
+#include <iostream>
 #include <type_traits>
 
 namespace Concerto::Math
@@ -303,7 +304,7 @@ namespace Concerto::Math
 		}
 
 		/**
-		 * @brief Shorthand for writing Vector<T,Size>(0,0,-1)
+		 * @brief Shorthand for writing Vector<T,Size>(...,1)
 		 * @return A new vector with last axis set to -1 and the others to 0
 		 */
 		static Vector<T, Size> Backward() noexcept
@@ -320,6 +321,22 @@ namespace Concerto::Math
 	private:
 		std::array<T, Size> _data;
 	};
+
+	template<typename T, std::size_t Size>
+	constexpr std::ostream& operator<<(std::ostream& os, const Vector<T, Size>& vector)
+	{
+		os << "Vector" << Size << '(';
+		for (std::size_t i = 0; i < Size; ++i)
+		{
+			os << vector[i];
+			if (i != Size - 1)
+			{
+				os << ", ";
+			}
+		}
+		os << ")";
+		return os;
+	}
 
 	using Vector2i = Vector<int, 2>;
 	using Vector2d = Vector<double, 2>;
