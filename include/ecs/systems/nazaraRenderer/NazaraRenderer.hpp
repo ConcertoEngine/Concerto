@@ -70,8 +70,6 @@ namespace Concerto::Ecs::System
 		Nz::Renderer::Config _rendererConfig;
 		Nz::RenderWindow _window;
 		Nz::RenderPipelineLayoutInfo _pipelineLayoutInfo;
-		Nz::ShaderBindingPtr _viewerShaderBinding;
-		Nz::ShaderBindingPtr _textureShaderBinding;
 		Nz::Vector2ui _windowSize;
 
 		nzsl::Ast::ModulePtr _shaderModule;
@@ -80,6 +78,7 @@ namespace Concerto::Ecs::System
 		std::unique_ptr<Nz::Modules<Nz::Renderer>> _nazara;
 
 		std::shared_ptr<Nz::RenderDevice> _device;
+		Nz::ShaderBindingPtr _textureShaderBinding;
 		std::shared_ptr<Nz::RenderPipelineLayout> _basePipelineLayout;
 		std::shared_ptr<Nz::RenderPipelineLayout> _renderPipelineLayout;
 		std::shared_ptr<Nz::ShaderModule> _fragVertShader;

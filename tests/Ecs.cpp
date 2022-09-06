@@ -24,7 +24,7 @@ TEST(Registry, addComponent)
 {
 	Registry r;
 	Entity::Id entity = r.CreateEntity();
-	Transform transform(Vector3f(0.f, 0.f, 0.f),  Vector3f(0.f, 0.f, 0.f), Vector3f(0.f, 0.f, 0.f));
+	Transform transform(Vector3f(0.f, 0.f, 0.f),  Quaternionf (0.f, 0.f, 0.f, 0.f), Vector3f(0.f, 0.f, 0.f));
 	auto &comp = r.EmplaceComponent<Transform>(entity, transform);
 	ASSERT_EQ(comp, transform);
 }
@@ -33,7 +33,7 @@ TEST(Registry, getComponent)
 {
 	Registry r;
 	Entity::Id entity = r.CreateEntity();
-	Transform transform(Vector3f(0.f, 0.f, 0.f),  Vector3f(0.f, 0.f, 0.f), Vector3f(0.f, 0.f, 0.f));
+	Transform transform(Vector3f(0.f, 0.f, 0.f), Quaternionf (0.f, 0.f, 0.f, 0.f), Vector3f(0.f, 0.f, 0.f));
 	auto &comp = r.EmplaceComponent<Transform>(entity, transform);
 	auto &comp2 = r.GetComponent<Transform>(entity);
 	ASSERT_EQ(&comp, &comp2);
@@ -43,7 +43,7 @@ TEST(Registry, removeComponent)
 {
 	Registry r;
 	Entity::Id entity = r.CreateEntity();
-	Transform transform(Vector3f(0.f, 0.f, 0.f),  Vector3f(0.f, 0.f, 0.f), Vector3f(0.f, 0.f, 0.f));
+	Transform transform(Vector3f(0.f, 0.f, 0.f), Quaternionf (0.f, 0.f, 0.f, 0.f), Vector3f(0.f, 0.f, 0.f));
 	auto& comp = r.EmplaceComponent<Transform>(entity, transform);
 	r.RemoveComponent<Transform>(entity);
 	try {
@@ -59,7 +59,7 @@ TEST(Registry, hasComponent)
 {
 	Registry r;
 	Entity::Id entity = r.CreateEntity();
-	Transform transform(Vector3f(0.f, 0.f, 0.f),  Vector3f(0.f, 0.f, 0.f), Vector3f(0.f, 0.f, 0.f));
+	Transform transform(Vector3f(0.f, 0.f, 0.f), Quaternionf (0.f, 0.f, 0.f, 0.f), Vector3f(0.f, 0.f, 0.f));
 	auto& comp = r.EmplaceComponent<Transform>(entity, transform);
 	ASSERT_TRUE(r.HasComponent<Transform>(entity));
 	r.RemoveComponent<Transform>(entity);

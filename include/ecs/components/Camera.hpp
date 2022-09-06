@@ -11,7 +11,8 @@ namespace Concerto::Ecs
 {
 	struct Camera
 	{
-		Math::Transform transform;
+		Math::Vector3f Position;
+		Math::Vector3f EulerAngles;
 	};
 }
 #endif //CONCERTO_CAMERA_HPP

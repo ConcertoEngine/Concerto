@@ -134,30 +134,6 @@ fn main(vertIn: VertIn) -> VertOut
 		_commandPool = renderDevice->InstantiateCommandPool(Nz::QueueType::Graphics);
 		_window.EnableEventPolling(true);
 		Nz::Mouse::SetRelativeMouseMode(true);
-		Input::Instance().Register("MouseMove", MouseEvent::Type::Moved, [&](const MouseEvent& e)
-		{
-			float sensitivity = 0.3f; // Sensibilité de la souris
-			_camAngles.yaw = _camAngles.yaw - e.mouseMove.deltaX * sensitivity;
-			_camAngles.yaw.Normalize();
-			_camAngles.pitch = Nz::Clamp(_camAngles.pitch - e.mouseMove.deltaY * sensitivity, -89.f, 89.f);
-			_camQuat = _camAngles;
-		});
-		Input::Instance().Register("Forward", Key::Z, TriggerType::Pressed, [&]()
-		{
-			viewerPos += _camQuat * Nz::Vector3f::Forward() * 1 / 60;
-		});
-		Input::Instance().Register("Backward", Key::S, TriggerType::Pressed, [&]()
-		{
-			viewerPos += _camQuat * Nz::Vector3f::Backward() * 1 / 60;
-		});
-		Input::Instance().Register("Left", Key::Q, TriggerType::Pressed, [&]()
-		{
-			viewerPos += _camQuat * Nz::Vector3f::Left() * 1 / 60;
-		});
-		Input::Instance().Register("Right", Key::D, TriggerType::Pressed, [&]()
-		{
-			viewerPos += _camQuat * Nz::Vector3f::Right() * 1 / 60;
-		});
 	}
 
 	void NazaraRenderer::Update(float deltaTime, Concerto::Ecs::Registry& r)
@@ -170,7 +146,13 @@ fn main(vertIn: VertIn) -> VertOut
 			std::this_thread::sleep_for(std::chrono::milliseconds(1));
 			return;
 		}
-
+		Camera* camera = nullptr;
+		for (Entity::Id entity = 0; entity < r.GetEntityCount(); ++entity)
+		{
+			if (!r.HasComponent<Camera>(entity))
+				continue;
+			camera = &r.GetComponent<Camera>(entity);
+		}
 		frame.Execute([&](Nz::CommandBufferBuilder& builder)
 		{
 			builder.BeginDebugRegion("UBO Update", Nz::Color::Yellow);
@@ -178,16 +160,21 @@ fn main(vertIn: VertIn) -> VertOut
 				builder.PreTransferBarrier();
 				for (Entity::Id entity = 0; entity < r.GetEntityCount(); ++entity)
 				{
+					if (!r.HasComponent<Math::Transform>(entity))
+						continue;
 					auto& transform = r.GetComponent<Math::Transform>(entity);
 					if (!_ubos.Has(entity))
 					{
 						CreateUbo(entity, transform, frame.GetUploadPool());
 					}
-
+					assert(camera);
 					UpdateUbo(entity, transform);
 					auto& ubo = _ubos[entity];
 					auto& allocation = _allocations[entity];
-					ubo.first.viewMatrix = Nz::Matrix4f::TransformInverse(viewerPos, _camAngles);
+					auto& cameraRot = camera->EulerAngles;
+					Nz::EulerAnglesf angles(cameraRot.X(), cameraRot.Y(), cameraRot.Z());
+					viewerPos.Set(camera->Position.X(), camera->Position.Y(), camera->Position.Z());
+					ubo.first.viewMatrix = Nz::Matrix4f::TransformInverse(viewerPos, angles);
 					std::memcpy(allocation.get().mappedPtr, &ubo.first, sizeof(UniformBufferObject));
 					builder.CopyBuffer(allocation.get(), _uniformBuffers[entity].get());
 				}
@@ -212,6 +199,10 @@ fn main(vertIn: VertIn) -> VertOut
 				{
 					for (Entity::Id entity = 0; entity < r.GetEntityCount(); ++entity)
 					{
+						if (!r.HasComponent<Math::Transform>(entity))
+							continue;
+						if (!r.HasComponent<Mesh>(entity))
+							continue;
 						auto& transform = r.GetComponent<Math::Transform>(entity);
 						auto& meshComp = r.GetComponent<Mesh>(entity);
 						Nz::Mesh& mesh = CreateMeshIfNotExist(entity, meshComp, transform);
