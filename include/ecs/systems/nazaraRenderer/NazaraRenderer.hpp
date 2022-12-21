@@ -5,10 +5,11 @@
 #ifndef CONCERTO_NAZARARENDERER_HPP
 #define CONCERTO_NAZARARENDERER_HPP
 
-#include <memory>
 #include <array>
 #include <chrono>
+#include <memory>
 #include <iostream>
+#include <optional>
 #include <thread>
 #include <unordered_map>
 
@@ -16,13 +17,14 @@
 #include "Transform.hpp"
 #include "SparseArray.hpp"
 #include "systems/ASystem.hpp"
-#include "NazaraEvent.hpp"
 
+#include "NazaraEvent.hpp"
 #include "Nazara/Core.hpp"
 #include "Nazara/Math.hpp"
 #include "Nazara/Platform.hpp"
 #include "Nazara/Renderer.hpp"
 #include "NZSL/FilesystemModuleResolver.hpp"
+#include "Nazara/Utility/Plugins/AssimpPlugin.hpp"
 #include "NZSL/LangWriter.hpp"
 #include "NZSL/Parser.hpp"
 #include "NZSL/Ast/SanitizeVisitor.hpp"
@@ -51,7 +53,7 @@ namespace Concerto::Ecs::System
 		bool ShouldClose() const;
 
 	private:
-		void UpdateEvents();
+		void UpdateEvents(float deltaTime);
 
 		bool _shouldClose;
 
@@ -76,6 +78,7 @@ namespace Concerto::Ecs::System
 		nzsl::ShaderWriter::States _states;
 
 		std::unique_ptr<Nz::Modules<Nz::Renderer>> _nazara;
+		std::optional<Nz::Plugin<Nz::AssimpPlugin>> _assimpPlugin;
 
 		std::shared_ptr<Nz::RenderDevice> _device;
 		Nz::ShaderBindingPtr _textureShaderBinding;

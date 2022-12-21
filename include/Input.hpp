@@ -38,26 +38,26 @@ namespace Concerto
 
 		static Input& Instance();
 
-		void Register(const std::string& name, Key key, TriggerType triggerType, std::function<void()>&& callback);
+		void Register(const std::string& name, Key key, TriggerType triggerType, std::function<void(float deltaTime)>&& callback);
 
-		void Register(const std::string& name, MouseEvent::Type key, std::function<void(const MouseEvent&)>&& callback);
+		void Register(const std::string& name, MouseEvent::Type key, std::function<void(const MouseEvent&, float deltaTime)>&& callback);
 
 	private:
-		void Trigger(const std::vector<Event>& events);
+		void Trigger(const std::vector<Event>& events, float deltaTime);
 
-		void TriggerKeyEvent(const KeyEvent& keyEvent);
+		void TriggerKeyEvent(const KeyEvent& keyEvent, float deltaTime);
 
-		void TriggerMouseEvent(const MouseEvent& mouseEvent);
+		void TriggerMouseEvent(const MouseEvent& mouseEvent, float deltaTime);
 
 		friend class Ecs::System::NazaraRenderer;
 
 		static Input* _instance;
-		using KeyCallbacks = std::vector<std::function<void()>>;
+		using KeyCallbacks = std::vector<std::function<void(float deltaTime)>>;
 		using TriggerTypeCallbacks = std::unordered_map<TriggerType, KeyCallbacks>;
 		using BindingCallback = std::pair<SparseArray<bool>, TriggerTypeCallbacks>;
 		std::unordered_map<std::string, BindingCallback> _keyCallbacks;
 
-		using MouseEventCallbacks = std::function<void(const MouseEvent&)>;
+		using MouseEventCallbacks = std::function<void(const MouseEvent&, float)>;
 		std::unordered_map<std::string, std::pair<MouseEvent::Type, std::vector<MouseEventCallbacks>>> _mouseCallback;
 	};
 }

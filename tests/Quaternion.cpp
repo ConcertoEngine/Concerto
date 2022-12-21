@@ -5,10 +5,11 @@
 #include <gtest/gtest.h>
 
 #include "Quaternion.hpp"
+constexpr float near = 0.001f;
 
 TEST(Quaternion, Quaternion)
 {
-	Concerto::Math::Quaternion<float> quaternion(1, 2, 3, 4);
+	Concerto::Math::Quaternionf quaternion(1, 2, 3, 4);
 	EXPECT_EQ(quaternion.X(), 1);
 	EXPECT_EQ(quaternion.Y(), 2);
 	EXPECT_EQ(quaternion.Z(), 3);
@@ -17,9 +18,9 @@ TEST(Quaternion, Quaternion)
 
 TEST(Quaternion, operatorAdd)
 {
-	Concerto::Math::Quaternion<float> quaternion1(1, 2, 3, 4);
-	Concerto::Math::Quaternion<float> quaternion2(1, 2, 3, 4);
-	Concerto::Math::Quaternion<float> quaternion3 = quaternion1 + quaternion2;
+	Concerto::Math::Quaternionf quaternion1(1, 2, 3, 4);
+	Concerto::Math::Quaternionf quaternion2(1, 2, 3, 4);
+	Concerto::Math::Quaternionf quaternion3 = quaternion1 + quaternion2;
 	EXPECT_EQ(quaternion3.X(), 2);
 	EXPECT_EQ(quaternion3.Y(), 4);
 	EXPECT_EQ(quaternion3.Z(), 6);
@@ -28,9 +29,9 @@ TEST(Quaternion, operatorAdd)
 
 TEST(Quaternion, operatorSub)
 {
-	Concerto::Math::Quaternion<float> quaternion1(1, 2, 3, 4);
-	Concerto::Math::Quaternion<float> quaternion2(1, 2, 3, 4);
-	Concerto::Math::Quaternion<float> quaternion3 = quaternion1 - quaternion2;
+	Concerto::Math::Quaternionf quaternion1(1, 2, 3, 4);
+	Concerto::Math::Quaternionf quaternion2(1, 2, 3, 4);
+	Concerto::Math::Quaternionf quaternion3 = quaternion1 - quaternion2;
 	EXPECT_EQ(quaternion3.X(), 0);
 	EXPECT_EQ(quaternion3.Y(), 0);
 	EXPECT_EQ(quaternion3.Z(), 0);
@@ -39,30 +40,30 @@ TEST(Quaternion, operatorSub)
 
 TEST(Quaternion, operatorMul)
 {
-	Concerto::Math::Quaternion<float> quaternion1(1, 2, 3, 4);
-	Concerto::Math::Quaternion<float> quaternion2(1, 2, 3, 4);
-	Concerto::Math::Quaternion<float> quaternion3 = quaternion1 * quaternion2;
-	EXPECT_EQ(quaternion3.X(), -28);
-	EXPECT_EQ(quaternion3.Y(), 4);
-	EXPECT_EQ(quaternion3.Z(), 6);
-	EXPECT_EQ(quaternion3.W(), 8);
+	Concerto::Math::Quaternionf quaternion1(1, 2, 3);
+	Concerto::Math::Quaternionf quaternion2(1, 2, 3);
+	Concerto::Math::Quaternionf quaternion3 = quaternion1 * quaternion2;
+	EXPECT_NEAR(quaternion3.X(), 0.0183483884f, near);
+	EXPECT_NEAR(quaternion3.Y(), 0.0344165042, near);
+	EXPECT_NEAR(quaternion3.Z(), 0.0520119108, near);
+	EXPECT_NEAR(quaternion3.W(), 0.997884572, near);
 }
 
 TEST(Quaternion, operatorDiv)
 {
-	Concerto::Math::Quaternion<float> quaternion1(1, 2, 3, 4);
-	Concerto::Math::Quaternion<float> quaternion2(1, 2, 3, 4);
-	Concerto::Math::Quaternion<float> quaternion3 = quaternion1 / quaternion2;
-	EXPECT_EQ(quaternion3.X(), 1);
-	EXPECT_EQ(quaternion3.Y(), 1);
-	EXPECT_EQ(quaternion3.Z(), 1);
-	EXPECT_EQ(quaternion3.W(), 1);
+	Concerto::Math::Quaternionf quaternion1(1, 2, 3);
+	Concerto::Math::Quaternionf quaternion2(1, 2, 3);
+	Concerto::Math::Quaternionf quaternion3 = quaternion1 / quaternion2;
+	EXPECT_NEAR(quaternion3.X(), -0.0183483884f, near);
+	EXPECT_NEAR(quaternion3.Y(), -0.0344165042, near);
+	EXPECT_NEAR(quaternion3.Z(), -0.0520119108, near);
+	EXPECT_NEAR(quaternion3.W(), -0.997884572, near);
 }
 
 TEST(Quaternion, operatorAddEqual)
 {
-	Concerto::Math::Quaternion<float> quaternion1(1, 2, 3, 4);
-	Concerto::Math::Quaternion<float> quaternion2(1, 2, 3, 4);
+	Concerto::Math::Quaternionf quaternion1(1, 2, 3, 4);
+	Concerto::Math::Quaternionf quaternion2(1, 2, 3, 4);
 	quaternion1 += quaternion2;
 	EXPECT_EQ(quaternion1.X(), 2);
 	EXPECT_EQ(quaternion1.Y(), 4);
@@ -72,8 +73,8 @@ TEST(Quaternion, operatorAddEqual)
 
 TEST(Quaternion, operatorSubEqual)
 {
-	Concerto::Math::Quaternion<float> quaternion1(1, 2, 3, 4);
-	Concerto::Math::Quaternion<float> quaternion2(1, 2, 3, 4);
+	Concerto::Math::Quaternionf quaternion1(1, 2, 3, 4);
+	Concerto::Math::Quaternionf quaternion2(1, 2, 3, 4);
 	quaternion1 -= quaternion2;
 	EXPECT_EQ(quaternion1.X(), 0);
 	EXPECT_EQ(quaternion1.Y(), 0);
@@ -83,44 +84,44 @@ TEST(Quaternion, operatorSubEqual)
 
 TEST(Quaternion, operatorMulEqual)
 {
-	Concerto::Math::Quaternion<float> quaternion1(1, 2, 3, 4);
-	Concerto::Math::Quaternion<float> quaternion2(1, 2, 3, 4);
+	Concerto::Math::Quaternionf quaternion1(1, 2, 3);
+	Concerto::Math::Quaternionf quaternion2(1, 2, 3);
 	quaternion1 *= quaternion2;
-	EXPECT_EQ(quaternion1.X(), -28);
-	EXPECT_EQ(quaternion1.Y(), 4);
-	EXPECT_EQ(quaternion1.Z(), 6);
-	EXPECT_EQ(quaternion1.W(), 8);
+	EXPECT_NEAR(quaternion1.X(), 0.0183483884f, near);
+	EXPECT_NEAR(quaternion1.Y(), 0.0344165042, near);
+	EXPECT_NEAR(quaternion1.Z(), 0.0520119108, near);
+	EXPECT_NEAR(quaternion1.W(), 0.997884572, near);
 }
 
 TEST(Quaternion, operatorDivEqual)
 {
-	Concerto::Math::Quaternion<float> quaternion1(1, 2, 3, 4);
-	Concerto::Math::Quaternion<float> quaternion2(1, 2, 3, 4);
+	Concerto::Math::Quaternionf quaternion1(1, 2, 3);
+	Concerto::Math::Quaternionf quaternion2(1, 2, 3);
 	quaternion1 /= quaternion2;
-	EXPECT_EQ(quaternion1.X(), 1);
-	EXPECT_EQ(quaternion1.Y(), 1);
-	EXPECT_EQ(quaternion1.Z(), 1);
-	EXPECT_EQ(quaternion1.W(), 1);
+	EXPECT_NEAR(quaternion1.X(), -0.0183483884f, near);
+	EXPECT_NEAR(quaternion1.Y(), -0.0344165042, near);
+	EXPECT_NEAR(quaternion1.Z(), -0.0520119108, near);
+	EXPECT_NEAR(quaternion1.W(), -0.997884572, near);
 }
 
 TEST(Quaternion, operatorEqual)
 {
-	Concerto::Math::Quaternion<float> quaternion1(1, 2, 3, 4);
-	Concerto::Math::Quaternion<float> quaternion2(1, 2, 3, 4);
+	Concerto::Math::Quaternionf quaternion1(1, 2, 3, 4);
+	Concerto::Math::Quaternionf quaternion2(1, 2, 3, 4);
 	EXPECT_EQ(quaternion1, quaternion2);
 }
 
 TEST(Quaternion, operatorNotEqual)
 {
-	Concerto::Math::Quaternion<float> quaternion1(1, 2, 3, 4);
-	Concerto::Math::Quaternion<float> quaternion2(1, 2, 3, 4);
+	Concerto::Math::Quaternionf quaternion1(1, 2, 3, 4);
+	Concerto::Math::Quaternionf quaternion2(1, 2, 3, 5);
 	EXPECT_NE(quaternion1, quaternion2);
 }
 
 TEST(Quaternion, operatorAddScalar)
 {
-	Concerto::Math::Quaternion<float> quaternion1(1, 2, 3, 4);
-	Concerto::Math::Quaternion<float> quaternion2 = quaternion1 + 1;
+	Concerto::Math::Quaternionf quaternion1(1, 2, 3, 4);
+	Concerto::Math::Quaternionf quaternion2 = quaternion1 + 1;
 	EXPECT_EQ(quaternion2.X(), 2);
 	EXPECT_EQ(quaternion2.Y(), 3);
 	EXPECT_EQ(quaternion2.Z(), 4);
@@ -129,8 +130,8 @@ TEST(Quaternion, operatorAddScalar)
 
 TEST(Quaternion, operatorSubScalar)
 {
-	Concerto::Math::Quaternion<float> quaternion1(1, 2, 3, 4);
-	Concerto::Math::Quaternion<float> quaternion2 = quaternion1 - 1;
+	Concerto::Math::Quaternionf quaternion1(1, 2, 3, 4);
+	Concerto::Math::Quaternionf quaternion2 = quaternion1 - 1;
 	EXPECT_EQ(quaternion2.X(), 0);
 	EXPECT_EQ(quaternion2.Y(), 1);
 	EXPECT_EQ(quaternion2.Z(), 2);
@@ -139,8 +140,8 @@ TEST(Quaternion, operatorSubScalar)
 
 TEST(Quaternion, operatorMulScalar)
 {
-	Concerto::Math::Quaternion<float> quaternion1(1, 2, 3, 4);
-	Concerto::Math::Quaternion<float> quaternion2 = quaternion1 * 2;
+	Concerto::Math::Quaternionf quaternion1(1, 2, 3, 4);
+	Concerto::Math::Quaternionf quaternion2 = quaternion1 * 2;
 	EXPECT_EQ(quaternion2.X(), 2);
 	EXPECT_EQ(quaternion2.Y(), 4);
 	EXPECT_EQ(quaternion2.Z(), 6);
@@ -149,10 +150,19 @@ TEST(Quaternion, operatorMulScalar)
 
 TEST(Quaternion, operatorDivScalar)
 {
-	Concerto::Math::Quaternion<float> quaternion1(1, 2, 3, 4);
-	Concerto::Math::Quaternion<float> quaternion2 = quaternion1 / 2;
+	Concerto::Math::Quaternionf quaternion1(1, 2, 3, 4);
+	Concerto::Math::Quaternionf quaternion2 = quaternion1 / 2;
 	EXPECT_EQ(quaternion2.X(), 0.5);
 	EXPECT_EQ(quaternion2.Y(), 1);
 	EXPECT_EQ(quaternion2.Z(), 1.5);
 	EXPECT_EQ(quaternion2.W(), 2);
+}
+
+TEST(Quaternion, operatorMultVector)
+{
+	Concerto::Math::Quaternionf quaternion1(1,2,3);
+	Concerto::Math::Vector3f vec = quaternion1 * Concerto::Math::Vector3f::Forward();
+	EXPECT_NEAR(vec.X(), 0.0348941758, near);
+	EXPECT_NEAR(vec.Y(), -0.0174524058, near);
+	EXPECT_NEAR(vec.Z(), 0.99923861, near);
 }

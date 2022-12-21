@@ -1,6 +1,7 @@
 //
 // Created by arthur on 01/08/2022.
 //
+#define NAZARA_DEBUG
 
 #include <filesystem>
 
@@ -123,7 +124,6 @@ fn main(vertIn: VertIn) -> VertOut
 		_textureShaderBinding = _renderPipelineLayout->AllocateShaderBinding(1);
 		Nz::RenderPipelineInfo pipelineInfo;
 		pipelineInfo.pipelineLayout = _renderPipelineLayout;
-		pipelineInfo.faceCulling = true;
 		pipelineInfo.depthBuffer = true;
 		pipelineInfo.shaderModules.emplace_back(_fragVertShader);
 		auto& pipelineVertexBuffer = pipelineInfo.vertexBuffers.emplace_back();
@@ -138,7 +138,7 @@ fn main(vertIn: VertIn) -> VertOut
 
 	void NazaraRenderer::Update(float deltaTime, Concerto::Ecs::Registry& r)
 	{
-		UpdateEvents();
+		UpdateEvents(deltaTime);
 		Nz::RenderFrame frame = _window.AcquireFrame();
 
 		if (!frame)
@@ -206,7 +206,8 @@ fn main(vertIn: VertIn) -> VertOut
 						auto& transform = r.GetComponent<Math::Transform>(entity);
 						auto& meshComp = r.GetComponent<Mesh>(entity);
 						Nz::Mesh& mesh = CreateMeshIfNotExist(entity, meshComp, transform);
-						Nz::Texture& texture = CreateTextureIfNotExist(meshComp);
+						if (!meshComp.texturePath.empty())
+							CreateTextureIfNotExist(meshComp);
 						std::shared_ptr<Nz::StaticMesh> sm = std::static_pointer_cast<Nz::StaticMesh>(
 								mesh.GetSubMesh(0));
 						const std::shared_ptr<Nz::VertexBuffer>& meshVB = sm->GetVertexBuffer();
@@ -244,12 +245,13 @@ fn main(vertIn: VertIn) -> VertOut
 		auto meshesIt = _meshes.find((resourceDir / mesh.modelPath).string());
 		if (meshesIt == _meshes.end())
 		{
-			Nz::MeshParams meshParams;
+			Nz::MeshParams meshParams{};
 			meshParams.bufferFactory = Nz::GetRenderBufferFactory(_device);
+			meshParams.vertexRotation = Nz::EulerAnglesf(0.f, -90.f, 0.f);
+			meshParams.vertexScale = Nz::Vector3f(0.002f);
 			meshParams.center = true;
-			meshParams.matrix =
-					Nz::Matrix4f::Rotate(Nz::EulerAnglesf(0.f, -90.f, 0.f)) * Nz::Matrix4f::Scale(Nz::Vector3f(0.002f));
 			meshParams.vertexDeclaration = Nz::VertexDeclaration::Get(Nz::VertexLayout::XYZ_Normal_UV);
+
 			auto path = resourceDir / mesh.modelPath;
 			auto meshPtr = Nz::Mesh::LoadFromFile(resourceDir / mesh.modelPath, meshParams);
 			if (!meshPtr)
@@ -277,7 +279,7 @@ fn main(vertIn: VertIn) -> VertOut
 			auto meshPtr = Nz::Texture::LoadFromFile(resourceDir / mesh.texturePath, texParams);
 			if (!meshPtr)
 			{
-				Logger::Error("Fail to load model");
+				Logger::Error("Fail to load Texture : '" + mesh.texturePath + '\'');
 			}
 			textureIt = _textures.emplace(textureName, meshPtr).first;
 			if (!_textureSampler)
@@ -295,7 +297,7 @@ fn main(vertIn: VertIn) -> VertOut
 		return *textureIt->second;
 	}
 
-	void NazaraRenderer::UpdateEvents()
+	void NazaraRenderer::UpdateEvents(float deltaTime)
 	{
 		Nz::WindowEvent event{};
 		std::vector<Event> events;
@@ -407,7 +409,7 @@ fn main(vertIn: VertIn) -> VertOut
 				break;
 			}
 		}
-		Input::Instance().Trigger(events);
+		Input::Instance().Trigger(events, deltaTime);
 	}
 
 	bool NazaraRenderer::ShouldClose() const
@@ -443,12 +445,13 @@ fn main(vertIn: VertIn) -> VertOut
 	void NazaraRenderer::UpdateUbo(Entity::Id entity, const Math::Transform& transform)
 	{
 		auto& ubo = _ubos[entity].first;
-		ubo.projectionMatrix = Nz::Matrix4f::Perspective(Nz::DegreeAnglef(70.f),
+		ubo.projectionMatrix = Nz::Matrix4f::Perspective(Nz::DegreeAnglef(90.f),
 				float(_windowSize.x) / float(_windowSize.y),
 				0.1f, 1000.f);
 		Nz::Quaternionf rotation(0, transform.Rotation.X(), transform.Rotation.Y(), transform.Rotation.Z());
 		ubo.viewMatrix = Nz::Matrix4f::Translate(Nz::Vector3f::Backward() * 1);
 		ubo.modelMatrix = Nz::Matrix4f::Transform(
-				Nz::Vector3f(transform.Location.X(), transform.Location.Y(), transform.Location.Z()), rotation);
+				Nz::Vector3f(transform.Location.X(), transform.Location.Y(), transform.Location.Z()), rotation,
+				Nz::Vector3f(transform.Scale.X(), transform.Scale.Y(), transform.Scale.Z()));
 	}
 }

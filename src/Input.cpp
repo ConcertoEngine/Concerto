@@ -3,6 +3,7 @@
 //
 
 #include <cassert>
+#include <iostream>
 #include "Input.hpp"
 
 namespace Concerto
@@ -27,7 +28,7 @@ namespace Concerto
 	}
 
 	void Input::Register(const std::string& name, Key key, TriggerType triggerType,
-			std::function<void()>&& callback)
+			std::function<void(float deltaTime)>&& callback)
 	{
 		auto it = _keyCallbacks.find(name);
 		if (it == _keyCallbacks.end())
@@ -43,7 +44,7 @@ namespace Concerto
 	}
 
 	void
-	Input::Register(const std::string& name, MouseEvent::Type key, std::function<void(const MouseEvent&)>&& callback)
+	Input::Register(const std::string& name, MouseEvent::Type key, std::function<void(const MouseEvent&, float deltaTime)>&& callback)
 	{
 		auto it = _mouseCallback.find(name);
 		if (it == _mouseCallback.end())
@@ -56,18 +57,18 @@ namespace Concerto
 		it->second.second.push_back(std::move(callback));
 	}
 
-	void Input::Trigger(const std::vector<Event>& events)
+	void Input::Trigger(const std::vector<Event>& events, float deltaTime)
 	{
 		for (const auto& event: events)
 		{
 			if (event.type == Event::Type::Key)
-				TriggerKeyEvent(std::get<KeyEvent>(event.data));
+				TriggerKeyEvent(std::get<KeyEvent>(event.data), deltaTime);
 			else if (event.type == Event::Type::Mouse)
-				TriggerMouseEvent(std::get<MouseEvent>(event.data));
+				TriggerMouseEvent(std::get<MouseEvent>(event.data), deltaTime);
 		}
 	}
 
-	void Input::TriggerKeyEvent(const KeyEvent& keyEvent)
+	void Input::TriggerKeyEvent(const KeyEvent& keyEvent, float deltaTime)
 	{
 		for (auto& [key, bindingCallback]: _keyCallbacks)
 		{
@@ -78,18 +79,18 @@ namespace Concerto
 			if (it == bindingCallback.second.end())
 				continue;
 			for (auto& callback: it->second)
-				callback();
+				callback(deltaTime);
 		}
 	}
 
-	void Input::TriggerMouseEvent(const MouseEvent& mouseEvent)
+	void Input::TriggerMouseEvent(const MouseEvent& mouseEvent, float deltaTime)
 	{
 		for (const auto& [key, callbacks]: _mouseCallback)
 		{
 			if (callbacks.first != mouseEvent.type)
 				continue;
 			for (auto& callback: callbacks.second)
-				callback(mouseEvent);
+				callback(mouseEvent, deltaTime);
 		}
 	}
 }

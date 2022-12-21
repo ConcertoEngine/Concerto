@@ -1,6 +1,7 @@
-#include <cstdint>
 #include <iostream>
-#include <string>
+#include <algorithm>
+#include <chrono>
+#include "Logger.hpp"
 #include "Registry.hpp"
 #include "Entity.hpp"
 #include "Transform.hpp"
@@ -11,7 +12,6 @@
 #include "Matrix.hpp"
 #include "Quaternion.hpp"
 #include "Camera.hpp"
-#include <algorithm>
 
 using namespace Concerto::Ecs;
 using namespace Concerto;
@@ -21,7 +21,7 @@ int main()
 {
 	try
 	{
-		Input i;
+		Input input;
 		StructuredData structuredData("./config.json");
 		const Config::Object& config = structuredData.getConfig();
 		World world;
@@ -29,9 +29,10 @@ int main()
 		auto& renderer = world.AddSystem<System::NazaraRenderer>(config);
 
 
+		for (Entity::Id entity = 0; entity < 100; ++entity)
 		{
 			auto meshEntity = r.CreateEntity();
-			Transform transform(Vector3f(0.f, 0.f, 0.f), Quaternionf(0.f, 0.f, 0.f, 0.f), Vector3f(0.f, 0.f, 0.f));
+			Transform transform(Vector3f(entity, 0.f, 0.f), Quaternionf(0.f, 0.f, 0.f, 0.f), Vector3f(1.f, 1.f, 1.f));
 			auto& transformComp = r.EmplaceComponent<Transform>(meshEntity, transform);
 			Mesh mesh;
 			mesh.modelPath = "spaceship.obj";
@@ -43,50 +44,65 @@ int main()
 		Camera camera{};
 		camera.Position = Vector3f(0.f, 0.f, 0.f);
 		auto& cameraComp = r.EmplaceComponent<Camera>(cameraEntity, camera);
-
-		Input::Instance().Register("MouseMove", MouseEvent::Type::Moved, [&](const MouseEvent& e)
+		float cameraSpeed = 10.f;
+		Input::Instance().Register("MouseMove", MouseEvent::Type::Moved, [&](const MouseEvent& e, float deltaTime)
 		{
 			float sensitivity = 0.3f; // Mouse sensitivity
 			cameraComp.EulerAngles.X() = std::clamp(cameraComp.EulerAngles.X() - e.mouseMove.deltaY * sensitivity,
 					-89.f, 89.f);
 			cameraComp.EulerAngles.Y() = cameraComp.EulerAngles.Y() - e.mouseMove.deltaX * sensitivity;
 		});
-		Input::Instance().Register("Forward", Key::Z, TriggerType::Pressed, [&]()
+		Input::Instance().Register("Forward", Key::Z, TriggerType::Pressed, [&](float deltaTime)
 		{
 			Quaternionf q;
 			q.Set(cameraComp.EulerAngles.X(), cameraComp.EulerAngles.Y(), cameraComp.EulerAngles.Z());
+			cameraComp.Position += q * Vector3f::Forward() * deltaTime * cameraSpeed;
+		});
+		Input::Instance().Register("Backward", Key::S, TriggerType::Pressed, [&](float deltaTime)
+		{
+			Quaternionf q;
+			q.Set(cameraComp.EulerAngles.X(), cameraComp.EulerAngles.Y(), cameraComp.EulerAngles.Z());
+			cameraComp.Position += q * Vector3f::Backward() * deltaTime * cameraSpeed;
+		});
+		Input::Instance().Register("Left", Key::Q, TriggerType::Pressed, [&](float deltaTime)
+		{
+			Quaternionf q;
+			q.Set(cameraComp.EulerAngles.X(), cameraComp.EulerAngles.Y(), cameraComp.EulerAngles.Z());
+			cameraComp.Position += q * Vector3f::Left() * deltaTime * cameraSpeed;
+		});
+		Input::Instance().Register("Right", Key::D, TriggerType::Pressed, [&](float deltaTime)
+		{
+			Quaternionf q;
+			q.Set(cameraComp.EulerAngles.X(), cameraComp.EulerAngles.Y(), cameraComp.EulerAngles.Z());
+			cameraComp.Position += q * Vector3f::Right() * deltaTime * cameraSpeed;
+		});
 
-			cameraComp.Position += q * Vector3f::Forward() * 1 / 60;
-		});
-		Input::Instance().Register("Backward", Key::S, TriggerType::Pressed, [&]()
-		{
-			Quaternionf q;
-			q.Set(cameraComp.EulerAngles.X(), cameraComp.EulerAngles.Y(), cameraComp.EulerAngles.Z());
-			cameraComp.Position += q * Vector3f::Backward() * 1 / 60;
-		});
-		Input::Instance().Register("Left", Key::Q, TriggerType::Pressed, [&]()
-		{
-			Quaternionf q;
-			q.Set(cameraComp.EulerAngles.X(), cameraComp.EulerAngles.Y(), cameraComp.EulerAngles.Z());
-			cameraComp.Position += q * Vector3f::Left() * 1 / 60;
-		});
-		Input::Instance().Register("Right", Key::D, TriggerType::Pressed, [&]()
-		{
-			Quaternionf q;
-			q.Set(cameraComp.EulerAngles.X(), cameraComp.EulerAngles.Y(), cameraComp.EulerAngles.Z());
-			cameraComp.Position += q * Vector3f::Right() * 1 / 60;
-		});
+		std::chrono::steady_clock::time_point lastFrameTime = std::chrono::steady_clock::now();
+		float deltaTime = 0.f;
+		float timeStep = 0.02f;
+		float timeUpdate = 0.016666f;
+		float stepUpdateRemainingTime = 0.f;
+		float updateRemainingTime = 0.f;
 
 		while (!renderer.ShouldClose())
 		{
-//			try
-//			{
-				world.Update(1.f / 60.f);
-//			}
-//			catch (const std::exception& e)
-//			{
-//				std::cout << e.what() << std::endl;
-//			}
+			auto beginTime = std::chrono::high_resolution_clock::now();
+			deltaTime = std::chrono::duration<float>(beginTime - lastFrameTime).count();
+			lastFrameTime = beginTime;
+			stepUpdateRemainingTime += deltaTime;
+			updateRemainingTime += deltaTime;
+
+			while (updateRemainingTime >= timeUpdate)
+			{
+				world.Update(updateRemainingTime);
+				updateRemainingTime -= timeUpdate;
+			}
+
+			while (stepUpdateRemainingTime >= timeStep)
+			{
+				world.StepUpdate(timeStep);
+				stepUpdateRemainingTime -= timeStep;
+			}
 		}
 	}
 	catch (const std::exception& e)

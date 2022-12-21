@@ -33,6 +33,18 @@ namespace Concerto::Math
 		/**
 		 * @brief Construct a new Quaternion object
 		 *
+		 * @param x The x axis
+		 * @param y The y axis
+		 * @param z The z axis
+		 */
+		constexpr Quaternion(T x, T y, T z) noexcept: _scalar(0), _vector(0, 0, 0)
+		{
+			Set(x, y, z);
+		}
+
+		/**
+		 * @brief Construct a new Quaternion object
+		 *
 		 * @param vector The vector
 		 * @param scalar The scalar
 		 */
@@ -117,6 +129,26 @@ namespace Concerto::Math
 		}
 
 		/**
+		 * @brief Get the inverse of this quaternion
+		 * @return Quaternion The inverse of this quaternion
+		 */
+		Quaternion<T> Inverse() const noexcept
+		{
+			return Quaternion<T>(-_vector.X(), -_vector.Y(), -_vector.Z(), -_scalar);
+		}
+
+		/**
+		 * @brief Conjugate the vector by multiplying X, Y, Z, part by -1
+		 * @return The quaternion's conjugate
+		 */
+		Quaternion<T> Conjugate() const noexcept
+		{
+			Quaternion<T> q = *this;
+			q._vector = Vector3<T>(-q.X(), -q.Y(), -q.Z());
+			return q;
+		}
+
+		/**
 		 * @brief Add the given quaternion to the current one
 		 * @param other The quaternion to add
 		 * @return A new quaternion that is the sum of the two
@@ -143,10 +175,20 @@ namespace Concerto::Math
 		 */
 		Quaternion<T> operator*(const Quaternion<T>& other) const noexcept
 		{
-			return Quaternion<T>(
-					_vector * other._scalar + other._vector * _scalar + _vector.Cross(other._vector),
-					_scalar * other._scalar - _vector.Dot(other._vector)
-			);
+			Quaternion<T> result;
+			result._vector.X() =
+					_scalar * other._vector.X() + other._scalar * _vector.X() + _vector.Y() * other._vector.Z() -
+					_vector.Z() * other._vector.Y();
+			result._vector.Y() =
+					_scalar * other._vector.Y() + other._scalar * _vector.Y() + _vector.Z() * other._vector.X() -
+					_vector.X() * other._vector.Z();
+			result._vector.Z() =
+					_scalar * other._vector.Z() + other._scalar * _vector.Z() + _vector.X() * other._vector.Y() -
+					_vector.Y() * other._vector.X();
+			result._scalar =
+					_scalar * other._scalar - _vector.X() * other._vector.X() - _vector.Y() * other._vector.Y() -
+					_vector.Z() * other._vector.Z();
+			return result;
 		}
 
 		/**
@@ -156,10 +198,7 @@ namespace Concerto::Math
 		 */
 		Quaternion<T> operator/(const Quaternion<T>& other) const noexcept
 		{
-			return Quaternion<T>(
-					_vector * other._scalar - other._vector * _scalar - _vector.Cross(other._vector),
-					_scalar * other._scalar + _vector.Dot(other._vector)
-			);
+			return *this * other.Inverse();
 		}
 
 		/**
@@ -236,8 +275,7 @@ namespace Concerto::Math
 		 */
 		Quaternion<T>& operator*=(const Quaternion<T>& other) noexcept
 		{
-			_vector = _vector * other._scalar + other._vector * _scalar + _vector.Cross(other._vector);
-			_scalar = _scalar * other._scalar - _vector.Dot(other._vector);
+			*this = *this * other;
 			return *this;
 		}
 
@@ -248,8 +286,7 @@ namespace Concerto::Math
 		 */
 		Quaternion<T>& operator/=(const Quaternion<T>& other) noexcept
 		{
-			_vector = _vector * other._scalar - other._vector * _scalar - _vector.Cross(other._vector);
-			_scalar = _scalar * other._scalar + _vector.Dot(other._vector);
+			*this = *this / other;
 			return *this;
 		}
 
@@ -260,9 +297,14 @@ namespace Concerto::Math
 		 */
 		Vector3<T> operator*(const Vector3<T>& vector) const noexcept
 		{
-			return Vector3<T>(
-					_vector.Cross(vector * T(2.0) + _vector.Cross(vector)) * _scalar + vector
-			);
+			Vector3<T> q(_vector);
+			Vector3<T> uv = q.Cross(vector);
+			Vector3<T> uuv = q.Cross(uv);
+			uv *= T(2.0) * _scalar;
+			uuv *= T(2.0);
+			auto x = vector + uv + uuv;
+			return x;
+//			return Vector3<T>(-x.X(), -x.Y(), -x.Z());
 		}
 
 		/**
@@ -282,7 +324,7 @@ namespace Concerto::Math
 		 */
 		bool operator!=(const Quaternion<T>& other) const noexcept
 		{
-			return _vector != other._vector || _scalar != other._scalar;
+			return !(*this == other);
 		}
 
 	private:
