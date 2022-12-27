@@ -59,3 +59,31 @@ TEST(Matcher, TestNoneOfCriteria)
 	EXPECT_FALSE(m.Matches(entity2));
 	EXPECT_TRUE(m.Matches(entity3));
 }
+
+TEST(Matcher, TestExcludeOfCriteria)
+{
+	Registry r;
+	Matcher m(r);
+	Entity::Id entity1 = r.CreateEntity();
+	Entity::Id entity2 = r.CreateEntity();
+	Entity::Id entity3 = r.CreateEntity();
+
+	m.Exclude(entity1, entity2);
+	EXPECT_FALSE(m.Matches(entity1));
+	EXPECT_FALSE(m.Matches(entity2));
+	EXPECT_TRUE(m.Matches(entity3));
+}
+
+TEST(Matcher, TestOnlyOfCriteria)
+{
+	Registry r;
+	Matcher m(r);
+	Entity::Id entity1 = r.CreateEntity();
+	Entity::Id entity2 = r.CreateEntity();
+	Entity::Id entity3 = r.CreateEntity();
+
+	m.Only(entity1, entity2);
+	EXPECT_TRUE(m.Matches(entity1));
+	EXPECT_TRUE(m.Matches(entity2));
+	EXPECT_FALSE(m.Matches(entity3));
+}
