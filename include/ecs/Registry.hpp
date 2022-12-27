@@ -139,6 +139,17 @@ namespace Concerto::Ecs
 		}
 
 		/**
+		 * @tparam Comp The component type
+		 * @param entity The entity to check for the component
+		 * @return True if the entity Has the component, false otherwise
+		 */
+		[[nodiscard]] bool HasComponent(Entity::Id entity, Component::Id id) const
+		{
+			auto it = _components.find(id);
+			return it != _components.end() && it->second.Has(entity);
+		}
+
+		/**
 		 * @brief Get the number of entities with a component
 		 * @tparam Comp The component type
 		 * @return The number of entities

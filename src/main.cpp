@@ -12,7 +12,8 @@
 #include "Matrix.hpp"
 #include "Quaternion.hpp"
 #include "Camera.hpp"
-
+#include "Observer.hpp"
+#include "Matcher.hpp"
 using namespace Concerto::Ecs;
 using namespace Concerto;
 using namespace Concerto::Math;
