@@ -10,7 +10,9 @@
 #include <any>
 #include <bitset>
 #include <exception>
+#include <string>
 #include "Component.hpp"
+#include "Name.hpp"
 #include "Entity.hpp"
 #include "SparseArray.hpp"
 
@@ -62,13 +64,28 @@ namespace Concerto::Ecs
 
 		/**
 		 * @brief Creates a new entity.
+		 * @remark The entity will have a default name : "Entity " + std::to_string(id).
 		 * @return The new entity.
 		 */
 		Entity::Id CreateEntity()
 		{
 			Entity::Id id = _nextId++;
+			EmplaceComponent<Name>(id, "Entity " + std::to_string(id));
 			return id;
 		}
+
+		/**
+		 * @brief Creates a new entity with a name.
+		 * @param name The name of the entity.
+		 * @return The new entity.
+		 */
+		Entity::Id CreateEntity(const std::string& name)
+		{
+			Entity::Id id = _nextId++;
+			EmplaceComponent<Name>(id, name);
+			return id;
+		}
+
 
 		/**
 		 * @brief Add a component to an entity
