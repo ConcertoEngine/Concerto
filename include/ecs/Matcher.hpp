@@ -86,6 +86,9 @@ namespace Concerto::Ecs
 			return *this;
 		}
 
+
+		operator bool () const;
+
 	private:
 		Registry& _registry;
 		Observer* _observer;

@@ -132,7 +132,7 @@ public:
 	{
 		if (index >= _container.size())
 			_container.resize(index + 1);
-		_container[index] = std::make_optional<value_type>(std::forward<Args>(args)...);
+		_container[index] = std::make_optional<value_type>((std::forward<Args>(args))...);
 		return _container.at(index).value();
 	}
 

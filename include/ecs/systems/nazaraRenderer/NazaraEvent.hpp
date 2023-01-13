@@ -14,10 +14,11 @@ namespace Concerto::Ecs::System
 	class NazaraEvent
 	{
 	public:
-		NazaraEvent(Nz::RenderWindow &renderWindow);
+		explicit NazaraEvent(Nz::RenderWindow &renderWindow);
+		void PollEvents(float deltaTime);
 	private:
 		friend class NazaraRenderer;
-		Nz::RenderWindow &_renderWindow;
+		Nz::RenderWindow &_window;
 	};
 
 } // Concerto

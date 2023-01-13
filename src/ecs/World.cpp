@@ -11,7 +11,7 @@ namespace Concerto::Ecs
 	{
 		for (auto& system : _systems)
 		{
-			system->Update(deltaTime, _registry);
+			(*system)->Update(deltaTime, _registry);
 		}
 	}
 
@@ -19,7 +19,7 @@ namespace Concerto::Ecs
 	{
 		for (auto& system : _systems)
 		{
-			system->StepUpdate(deltaTime, _registry);
+			(*system)->StepUpdate(deltaTime, _registry);
 		}
 	}
 

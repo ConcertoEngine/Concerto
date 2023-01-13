@@ -16,7 +16,7 @@
 #include "Mesh.hpp"
 #include "Transform.hpp"
 #include "SparseArray.hpp"
-#include "systems/ASystem.hpp"
+#include "systems/System.hpp"
 
 #include "NazaraEvent.hpp"
 #include "Nazara/Core.hpp"
@@ -39,12 +39,12 @@ namespace Concerto::Ecs::System
 		Nz::Matrix4f viewMatrix;
 	};
 
-	class NazaraRenderer : public ASystem
+	class NazaraRenderer : public System
 	{
 	public:
 		NazaraRenderer(const Config::Object& data);
 
-		~NazaraRenderer() override = default;
+		virtual ~NazaraRenderer()  = default;
 
 		void Update(float deltaTime, Registry& r) override;
 
@@ -55,7 +55,6 @@ namespace Concerto::Ecs::System
 	private:
 		void UpdateEvents(float deltaTime);
 
-		bool _shouldClose;
 
 		void CreateUbo(Entity::Id entity, const Math::Transform& transform, Nz::UploadPool &uploadPool);
 		void UpdateUbo(Entity::Id entity, const Math::Transform& transform);

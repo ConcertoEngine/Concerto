@@ -17,9 +17,8 @@ namespace Concerto
 {
 	namespace Ecs::System
 	{
-		class NazaraRenderer;
+		class NazaraEvent;
 	}
-
 
 	class Input
 	{
@@ -49,7 +48,7 @@ namespace Concerto
 
 		void TriggerMouseEvent(const MouseEvent& mouseEvent, float deltaTime);
 
-		friend class Ecs::System::NazaraRenderer;
+		friend class Ecs::System::NazaraEvent;
 
 		static Input* _instance;
 		using KeyCallbacks = std::vector<std::function<void(float deltaTime)>>;
