@@ -11,7 +11,7 @@
 #include <vector>
 #include "Event.hpp"
 #include "Key.hpp"
-#include "SparseArray.hpp"
+#include "Concerto/Core/SparseArray.hpp"
 
 namespace Concerto
 {

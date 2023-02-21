@@ -14,7 +14,7 @@
 #include "Component.hpp"
 #include "Name.hpp"
 #include "Entity.hpp"
-#include "SparseArray.hpp"
+#include "Concerto/Core/SparseArray.hpp"
 
 namespace Concerto::Ecs
 {

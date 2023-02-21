@@ -14,8 +14,8 @@
 #include <unordered_map>
 
 #include "Mesh.hpp"
-#include "Transform.hpp"
-#include "SparseArray.hpp"
+#include "Concerto/Core/Math/Transform.hpp"
+#include "Concerto/Core/SparseArray.hpp"
 #include "systems/System.hpp"
 
 #include "NazaraEvent.hpp"

@@ -6,7 +6,7 @@
 #define CONCERTO_WORLD_HPP
 
 #include <memory>
-#include "SparseArray.hpp"
+#include "Concerto/Core/SparseArray.hpp"
 #include "Registry.hpp"
 #include "System.hpp"
 
