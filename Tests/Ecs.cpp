@@ -4,8 +4,8 @@
 
 #include <gtest/gtest.h>
 #include "Registry.hpp"
-#include "Transform.hpp"
-#include "Vector.hpp"
+#include "Concerto/Core/Math/Transform.hpp"
+#include "Concerto/Core/Math/Vector.hpp"
 
 using namespace Concerto::Ecs;
 using namespace Concerto::Math;

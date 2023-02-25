@@ -12,7 +12,7 @@ namespace Concerto::Ecs::System
 {
 	/**
 	 * @brief Interface for a system.
-	 * Provides the logic to act on entities and it components.
+	 * Provides the logic to act on entities and it Components.
 	 */
 	class System
 	{

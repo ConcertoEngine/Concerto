@@ -1,19 +1,20 @@
 #include <iostream>
 #include <algorithm>
 #include <chrono>
-#include "Concerto/Core/Logger.hpp"
 #include "Registry.hpp"
 #include "Entity.hpp"
-#include "Concerto/Core/Math/Transform.hpp"
 #include "NazaraRenderer.hpp"
 #include "ecs/World.hpp"
-#include "Concerto/Core/StructuredData.hpp"
 #include "Input.hpp"
+#include "Concerto/Core/Logger.hpp"
+#include "Concerto/Core/StructuredData.hpp"
+#include "Concerto/Core/Math/Transform.hpp"
 #include "Concerto/Core/Math/Matrix.hpp"
 #include "Concerto/Core/Math/Quaternion.hpp"
 #include "Camera.hpp"
 #include "Observer.hpp"
 #include "Matcher.hpp"
+
 using namespace Concerto::Ecs;
 using namespace Concerto;
 using namespace Concerto::Math;
@@ -24,7 +25,7 @@ int main()
 	{
 		Input input;
 		StructuredData structuredData("./config.json");
-		const Config::Object& config = structuredData.getConfig();
+		const Config::Object& config = structuredData.GetConfig();
 		World world;
 		Registry& r = world.GetRegistry();
 		auto& renderer = world.AddSystem<System::NazaraRenderer>(config);

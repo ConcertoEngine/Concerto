@@ -12,7 +12,7 @@
 #include <exception>
 #include <string>
 #include "Component.hpp"
-#include "Name.hpp"
+#include "Components/Name.hpp"
 #include "Entity.hpp"
 #include "Concerto/Core/SparseArray.hpp"
 
@@ -20,7 +20,7 @@ namespace Concerto::Ecs
 {
 	/**
 	 * @brief The Registry class is the main class of the ECS.
-	 * It is used to create entities and components.
+	 * It is used to create entities and Components.
 	 */
 	class Registry
 	{

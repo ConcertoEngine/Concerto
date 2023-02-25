@@ -14,7 +14,7 @@ namespace Concerto::Ecs
 {
 	/**
 	 * @brief The World class is the main class of the ECS.
-	 * It contains all the entities and systems.
+	 * It contains all the entities and Systems.
 	 */
 	class World
 	{

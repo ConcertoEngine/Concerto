@@ -4,8 +4,8 @@
 
 #ifndef CONCERTO_CAMERA_HPP
 #define CONCERTO_CAMERA_HPP
-#include "Transform.hpp"
-#include "Matrix.hpp"
+#include "Concerto/Core/Math/Transform.hpp"
+#include "Concerto/Core/Math/Matrix.hpp"
 
 namespace Concerto::Ecs
 {
