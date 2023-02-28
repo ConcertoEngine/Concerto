@@ -12,8 +12,6 @@ namespace Concerto::Ecs
 	struct Name
 	{
 		Name() = default;
-		explicit Name(const std::string& name) : _name(name) {}
-		explicit Name(std::string&& name) : _name(std::move(name)) {}
 		explicit Name(std::string name) : _name(std::move(name)) {}
 		Name(const Name&) = default;
 		Name(Name&&) = default;

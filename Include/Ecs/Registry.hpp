@@ -70,7 +70,7 @@ namespace Concerto::Ecs
 		Entity::Id CreateEntity()
 		{
 			Entity::Id id = _nextId++;
-			EmplaceComponent<Name>(id, "Entity " + std::to_string(id));
+			EmplaceComponent<Name>(id, Name("Entity " + std::to_string(id)));
 			return id;
 		}
 

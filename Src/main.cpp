@@ -37,7 +37,7 @@ int main()
 			Transform transform(Vector3f(entity, 0.f, 0.f), Quaternionf(0.f, 0.f, 0.f, 0.f), Vector3f(1.f, 1.f, 1.f));
 			auto& transformComp = r.EmplaceComponent<Transform>(meshEntity, transform);
 			Mesh mesh;
-			mesh.modelPath = "spaceship.obj";
+			mesh.modelPath = "sponza/sponza.obj";
 			mesh.texturePath = "diffuse.png";
 			auto& meshComp = r.EmplaceComponent<Mesh>(meshEntity, std::move(mesh));
 		}

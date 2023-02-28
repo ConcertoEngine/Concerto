@@ -8,7 +8,7 @@
 #include "NazaraRenderer.hpp"
 #include "Concerto/Core/Logger.hpp"
 #include "Input.hpp"
-
+#include "Matcher.hpp"
 #include "components/Camera.hpp"
 
 namespace Concerto::Ecs::System
@@ -84,18 +84,64 @@ fn main(vertIn: VertIn) -> VertOut
 
 	NazaraRenderer::NazaraRenderer(const Config::Object& data)
 		: System(data),
+		  _assetsPath(data["assetPath"].AsString()),
 		  _app(),
 		  _device(Nz::Graphics::Instance()->GetRenderDevice()),
 		  _windowing(_app.AddComponent<Nz::AppWindowingComponent>()),
 		  _window(_windowing.CreateWindow(Nz::VideoMode(1280, 720), "Concerto")),
-		  _windowSwapchain(_device, _window)
+		  _windowSwapchain(_device, _window),
+		  _camera(&_windowSwapchain),
+		  _viewerInstance(_camera.GetViewerInstance()),
+		  _modelInstance(std::make_shared<Nz::WorldInstance>()),
+		  _windowScissorBox(Nz::Vector2i::Zero(), Nz::Vector2i(_window.GetSize())),
+		  _elementRegistry(),
+		  _framePipeline(_elementRegistry),
+		  _cameraIndex(_framePipeline.RegisterViewer(&_camera, 0)),
+		  _worldInstanceIndex(_framePipeline.RegisterWorldInstance(_modelInstance))
 	{
+		Nz::Vector2ui windowSize = _window.GetSize();
+		_viewerInstance.UpdateTargetSize(Nz::Vector2f(_window.GetSize()));
+		_viewerInstance.UpdateProjViewMatrices(Nz::Matrix4f::Perspective(
+				Nz::DegreeAnglef(70.f), float(windowSize.x) / windowSize.y, 0.1f, 1000.f),
+			Nz::Matrix4f::Translate(Nz::Vector3f::Backward() * 1));
+		_modelInstance->UpdateWorldMatrix(Nz::Matrix4f::Translate(Nz::Vector3f::Forward() * 2 + Nz::Vector3f::Left()));
+		_window.GetEventHandler().OnEvent.Connect([&](const Nz::WindowEventHandler*, const Nz::WindowEvent& event)
+		{
+			if (event.type == Nz::WindowEventType::Resized)
+			{
+				Nz::Vector2ui newWindowSize = _window.GetSize();
+				_viewerInstance.UpdateProjectionMatrix(Nz::Matrix4f::Perspective(Nz::DegreeAnglef(70.f), float(newWindowSize.x) / newWindowSize.y, 0.1f, 1000.f));
+				_viewerInstance.UpdateTargetSize(Nz::Vector2f(newWindowSize));
+				_windowScissorBox = Nz::Recti(Nz::Vector2i::Zero(), Nz::Vector2i(newWindowSize));
+			}
+		});
 
 	}
 
 	void NazaraRenderer::Update(float deltaTime, Concerto::Ecs::Registry& r)
 	{
+		Nz::RenderFrame frame = _windowSwapchain.AcquireFrame();
+		if (!frame)
+		{
+			std::this_thread::sleep_for(std::chrono::milliseconds(1));
+			return;
+		}
+		Ecs::Matcher matcher(r);
+		matcher.AllOf<Math::Transform, Mesh>();
 
+		for (std::size_t entity = 0; entity < r.GetEntityCount(); ++entity)
+		{
+			if (!matcher.Matches(entity))
+				continue;
+			auto& transform = r.GetComponent<Math::Transform>(entity);
+			auto& mesh = r.GetComponent<Mesh>(entity);
+			auto& graphicalObject = CreateMeshIfNotExist(mesh.modelPath);
+
+		}
+
+		_framePipeline.Render(frame);
+
+		frame.Present();
 	}
 
 	void NazaraRenderer::StepUpdate(float deltaTime, Concerto::Ecs::Registry& r)
@@ -103,14 +149,53 @@ fn main(vertIn: VertIn) -> VertOut
 
 	}
 
-
-	void NazaraRenderer::UpdateEvents(float deltaTime)
-	{
-
-	}
-
 	bool NazaraRenderer::ShouldClose() const
 	{
 		return !_window.IsOpen();
+	}
+
+	GraphicalObject& NazaraRenderer::CreateMeshIfNotExist(const std::string& path)
+	{
+		auto it = _meshes.find(path);
+		if (it != _meshes.end())
+			return it->second;
+		std::shared_ptr<Nz::Mesh> mesh = Nz::Mesh::LoadFromFile(_assetsPath / path);
+		GraphicalObject obj
+			{
+				.model = Nz::Model(Nz::GraphicalMesh::BuildFromMesh(*mesh), mesh->GetAABB()),
+				.mesh = mesh,
+				.materialInstance = CreateMaterialIfNotExist(path)
+			};
+		_framePipeline.RegisterRenderable(_worldInstanceIndex,
+			Nz::FramePipeline::NoSkeletonInstance,
+			&obj.model,
+			0xFFFFFFFF,
+			_windowScissorBox);
+		for (std::size_t i = 0; i < obj.model.GetMaterialCount(); ++i)
+			obj.model.SetMaterial(i, obj.materialInstance);
+		auto newElement = _meshes.emplace(path, std::move(obj));
+		return newElement.first->second;
+	}
+
+	std::shared_ptr<Nz::Texture> NazaraRenderer::CreateTextureIfNotExist(const std::string& path)
+	{
+		auto it = _textures.find(path);
+		if (it != _textures.end())
+			return it->second;
+		Nz::TextureParams texParams;
+		texParams.renderDevice = _device;
+		std::shared_ptr<Nz::Texture> texture = Nz::Texture::LoadFromFile(_assetsPath / path, texParams);
+		_textures.emplace(path, texture);
+		return texture;
+	}
+
+	std::shared_ptr<Nz::MaterialInstance> NazaraRenderer::CreateMaterialIfNotExist(const std::string& path)
+	{
+		std::shared_ptr<Nz::Material> material = Nz::Graphics::Instance()->GetDefaultMaterials().pbrMaterial;
+		Nz::TextureParams texParams;
+		texParams.renderDevice = _device;
+		std::shared_ptr<Nz::MaterialInstance> materialInstance = std::make_shared<Nz::MaterialInstance>(material);
+		materialInstance->SetTextureProperty("BaseColorMap", CreateTextureIfNotExist(path));
+		return materialInstance;
 	}
 }

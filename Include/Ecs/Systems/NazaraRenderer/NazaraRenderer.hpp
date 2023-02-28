@@ -12,6 +12,7 @@
 #include <optional>
 #include <thread>
 #include <unordered_map>
+#include <filesystem>
 
 #include "Mesh.hpp"
 #include "Concerto/Core/Math/Transform.hpp"
@@ -40,6 +41,13 @@ namespace Concerto::Ecs::System
 		Nz::Matrix4f viewMatrix;
 	};
 
+	struct GraphicalObject
+	{
+		Nz::Model model;
+		std::shared_ptr<Nz::Mesh> mesh;
+		std::shared_ptr<Nz::MaterialInstance> materialInstance;
+	};
+
 	class NazaraRenderer : public System
 	{
 	public:
@@ -53,15 +61,28 @@ namespace Concerto::Ecs::System
 
 		bool ShouldClose() const;
 
+		GraphicalObject& CreateMeshIfNotExist(const std::string& path);
+		std::shared_ptr<Nz::Texture> CreateTextureIfNotExist(const std::string& path);
+		std::shared_ptr<Nz::MaterialInstance> CreateMaterialIfNotExist(const std::string& path);
 	private:
-		void UpdateEvents(float deltaTime);
-
-		std::string _assetPath;
+		std::filesystem::path _assetsPath;
+		// Nazara
 		Nz::Application<Nz::Graphics> _app;
 		std::shared_ptr<Nz::RenderDevice> _device;
 		Nz::AppWindowingComponent& _windowing;
 		Nz::Window& _window;
 		Nz::WindowSwapchain _windowSwapchain;
+		Nz::Camera _camera;
+		Nz::ViewerInstance& _viewerInstance;
+		Nz::WorldInstancePtr _modelInstance;
+		Nz::Recti _windowScissorBox;
+		Nz::ElementRendererRegistry _elementRegistry;
+		Nz::ForwardFramePipeline _framePipeline;
+		std::size_t _cameraIndex;
+		std::size_t _worldInstanceIndex;
+
+		std::unordered_map<std::string, GraphicalObject> _meshes;
+		std::unordered_map<std::string, std::shared_ptr<Nz::Texture>> _textures;
 	};
 }
 #endif //CONCERTO_NAZARARENDERER_HPP
