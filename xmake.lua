@@ -3,6 +3,7 @@ add_repositories('Concerto-xrepo https://github.com/ConcertoEngine/xmake-repo.gi
 add_repositories('nazara-engine-repo https://github.com/NazaraEngine/xmake-repo.git')
 add_requires('gtest', 'ConcertoCore')
 add_requires('nazaraengine', { configs = { audio = false, network = false, physics2d = false, physics3d = false, utility = true, plugin_assimp = true, with_symbols = true  } })
+set_runtime(is_mode('debug') and 'MDd' or 'MD')
 
 target('Concerto')
     set_kind('binary')
