@@ -4,15 +4,16 @@
 
 #ifndef CONCERTO_CAMERA_HPP
 #define CONCERTO_CAMERA_HPP
-#include "Concerto/Core/Math/Transform.hpp"
-#include "Concerto/Core/Math/Matrix.hpp"
+
+#include "Concerto/Core/Math/Vector.hpp"
+#include "Concerto/Core/Math/Quaternion.hpp"
 
 namespace Concerto::Ecs
 {
 	struct Camera
 	{
 		Math::Vector3f Position;
-		Math::Vector3f EulerAngles;
+		Math::Quaternionf Rotation;
 	};
 }
 #endif //CONCERTO_CAMERA_HPP
