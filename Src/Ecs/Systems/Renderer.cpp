@@ -4,19 +4,17 @@
 
 #include <Concerto/Core/Math/Transform.hpp>
 #include "Renderer.hpp"
-#include "Matcher.hpp"
-#include "Camera.hpp"
 
 using namespace Concerto::Graphics;
 
 namespace Concerto::Ecs::System
 {
-	Renderer::Renderer(Graphics::RendererInfo rendererInfo, const Config::Object& data) :
-	System(data),
-	_rendererInfo(std::move(rendererInfo)),
-	_window(std::make_unique<GlfW3>(rendererInfo.applicationName, rendererInfo.width, rendererInfo.height)),
-	_renderer(rendererInfo, *_window),
-	imGui(_renderer.GetImGUIContext())
+	Renderer::Renderer(const Config::Object& data, Graphics::RendererInfo rendererInfo) :
+		System(data),
+		_rendererInfo(std::move(rendererInfo)),
+		_window(std::make_unique<GlfW3>(rendererInfo.applicationName, rendererInfo.width, rendererInfo.height)),
+		_renderer(rendererInfo, *_window),
+		imGui(_renderer.GetImGUIContext())
 	{
 		_window->RegisterCursorPosCallback([&](AWindow<GLFWwindow>& window, double x, double y)
 		{
@@ -52,36 +50,32 @@ namespace Concerto::Ecs::System
 		  keyEvent.triggerType = Concerto::TriggerType(action);
 		  Input::Instance().TriggerKeyEvent(keyEvent, _deltaTime);
 		});
+		_transformMeshMatcher.AllOf<Math::Transform, MeshPtr>();
+		_cameraMatcher.AllOf<Graphics::Camera>();
 	}
 
 	void Renderer::Update(float deltaTime, Registry& r)
 	{
 		_deltaTime = deltaTime;
 		_window->PopEvent();
+		_transformMeshMatcher.SetRegistry(r);
+		_cameraMatcher.SetRegistry(r);
 
-		Matcher matcher(r);
-		matcher.AllOf<Math::Transform, MeshPtr>();
-
-		for (std::size_t i = 0; i < r.GetEntityCount(); ++i)
+		_transformMeshMatcher.ForEachMatching([&](Registry& registry, Entity::Id entity)
 		{
-			if (!matcher.Matches(i))
-				continue;
+		  auto& transform = registry.GetComponent<Math::Transform>(entity);
+		  auto& mesh = registry.GetComponent<MeshPtr>(entity);
+		  _renderer.DrawObject(mesh, transform.GetLocation(), transform.GetRotation(), transform.GetScale());
+		});
 
-			auto& transform = r.GetComponent<Math::Transform>(i);
-			auto& mesh = r.GetComponent<MeshPtr>(i);
-			_renderer.DrawObject(mesh, transform.GetLocation(), transform.GetRotation(), transform.GetScale());
-		}
-
-		Matcher cameraMatcher(r);
-		cameraMatcher.AllOf<Graphics::Camera>();
 		Graphics::Camera* cameraComponent = nullptr;
-		for (std::size_t i = 0; i < r.GetEntityCount(); ++i)
+
+		_cameraMatcher.ForEachMatching([&](Registry& registry, Entity::Id entity)
 		{
-			if (!cameraMatcher.Matches(i))
-				continue;
-			auto &cam = r.GetComponent<Graphics::Camera>(i);
-			cameraComponent = &cam;
-		}
+		  auto& cam = registry.GetComponent<Graphics::Camera>(entity);
+		  cameraComponent = &cam;
+		});
+
 		if (cameraComponent == nullptr)
 			return;
 		_renderer.Draw(*cameraComponent);

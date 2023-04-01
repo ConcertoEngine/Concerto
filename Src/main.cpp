@@ -35,7 +35,7 @@ int main(int argc, const char** argv)
 			.width = 1280,
 			.height = 720
 		};
-		auto& renderer = world.AddSystem<Ecs::System::Renderer>(std::move(info), config);
+		auto& renderer = world.AddSystem<Ecs::System::Renderer>(config, std::move(info));
 
 		auto entity = r.CreateEntity();
 		Math::Transform transform(Vector3f(0.f, 0.f, 0.f), Quaternionf(EulerAnglesf(0.f, 0.f, 0.f)), Vector3f(1.f, 1.f, 1.f));
