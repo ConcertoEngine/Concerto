@@ -3,25 +3,33 @@
 //
 
 #include <algorithm>
+#include <cassert>
+
 #include "Matcher.hpp"
 #include "Entity.hpp"
 #include "Observer.hpp"
 
 namespace Concerto::Ecs
 {
-	Matcher::Matcher(Registry& registry) : _registry(registry), _observer(nullptr)
+	Matcher::Matcher(Registry& registry) : _registry(&registry), _observer(nullptr)
 	{
 	}
 
-	Matcher::Matcher(Registry& registry, Observer& observer) : _registry(registry), _observer(&observer)
+	Matcher::Matcher(Registry& registry, Observer& observer) : _registry(&registry), _observer(&observer)
 	{
+	}
+
+	void Matcher::SetRegistry(Registry& registry)
+	{
+		_registry = &registry;
 	}
 
 	[[nodiscard]] bool Matcher::Matches(Entity::Id entity)
 	{
+		assert(_registry != nullptr);
 		if (!_allOf.empty() && std::any_of(_allOf.begin(), _allOf.end(), [&](Component::Id id)
 		{
-			return !_registry.HasComponent(entity, id);
+			return !_registry->HasComponent(entity, id);
 		}))
 		{
 			_matchingEntities.erase(entity);
@@ -29,7 +37,7 @@ namespace Concerto::Ecs
 		}
 		if (!_noneOf.empty() && std::any_of(_noneOf.begin(), _noneOf.end(), [&](Component::Id id)
 		{
-			return _registry.HasComponent(entity, id);
+			return _registry->HasComponent(entity, id);
 		}))
 		{
 			_matchingEntities.erase(entity);

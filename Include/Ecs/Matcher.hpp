@@ -18,6 +18,7 @@ namespace Concerto::Ecs
 	class Matcher
 	{
 	public:
+		Matcher() = default;
 		/**
 		 * Constructs a new Matcher for the given registry.
 		 * @param registry The registry to match against.
@@ -30,6 +31,12 @@ namespace Concerto::Ecs
 		 * @param observer observer An observer that will be notified when an entity is added or removed from the set of matching entities.
 		 */
 		Matcher(Registry& registry, Observer& observer);
+
+		/**
+		 * @brief Sets the registry by replacing the existing one.
+		 * @param registry The registry to match against.
+		 */
+		void SetRegistry(Registry& registry);
 
 		/**
 		 * @brief Returns true if the given entity matches the criteria specified by the Matcher.
@@ -86,12 +93,24 @@ namespace Concerto::Ecs
 			return *this;
 		}
 
-
-		operator bool () const;
-
+		/**
+		 * @bried Iterates over all matching entities and calls the given function.
+		 * @tparam Func The type of the function.
+		 */
+		template<typename Func>
+		requires std::invocable<Func, Registry&, Entity::Id>
+		void ForEachMatching(Func&& func)
+		{
+			assert(_registry != nullptr && "Matcher::ForEachMatching: Registry is null");
+			for (auto entity = 0; entity < _registry->GetEntityCount(); ++entity)
+			{
+				if (Matches(entity))
+					func(*_registry, entity);
+			}
+		}
 	private:
-		Registry& _registry;
-		Observer* _observer;
+		Registry* _registry = nullptr;
+		Observer* _observer = nullptr;
 		std::set<Component::Id> _allOf;
 		std::set<Component::Id> _noneOf;
 		std::set<Entity::Id> _excluded;
