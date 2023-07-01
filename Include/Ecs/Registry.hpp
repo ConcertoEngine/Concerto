@@ -24,7 +24,7 @@ namespace Concerto::Ecs
 	 */
 	class Registry
 	{
-	public:
+	 public:
 		using map_element = SparseArray<std::any>;
 		using container_type = std::unordered_map<Component::Id, map_element>;
 		using iterator = container_type::iterator;
@@ -32,7 +32,7 @@ namespace Concerto::Ecs
 
 		Registry() = default;
 
-		Registry(Registry&&) = default;
+		Registry(Registry&&) noexcept = default;
 
 		Registry(const Registry&) = delete;
 
@@ -86,7 +86,6 @@ namespace Concerto::Ecs
 			return id;
 		}
 
-
 		/**
 		 * @brief Add a component to an entity
 		 * @tparam Comp The component type
@@ -99,12 +98,13 @@ namespace Concerto::Ecs
 		Comp& EmplaceComponent(Entity::Id entity, Args&& ...args)
 		{
 			Component::Id id = Component::GetId<Comp>();
-			if (_components.find(id) == _components.end())
+			auto it = _components.find(id);
+			if (it == _components.end())
 			{
-				auto it = _components.emplace(id, map_element());
-				return std::any_cast<Comp&>(it.first->second.Emplace(entity, std::forward<Args>(args)...));
+				auto newCompIt = _components.emplace(id, map_element());
+				return std::any_cast<Comp&>(newCompIt.first->second.Emplace(entity, std::forward<Args>(args)...));
 			}
-			auto& sparseArrayElement = _components.at(id).Emplace(entity, std::forward<Args>(args)...);
+			auto& sparseArrayElement = it->second.Emplace(entity, std::forward<Args>(args)...);
 			return std::any_cast<Comp&>(sparseArrayElement);
 		}
 
@@ -117,9 +117,10 @@ namespace Concerto::Ecs
 		void RemoveComponent(Entity::Id entity)
 		{
 			Component::Id id = Component::GetId<Comp>();
-			if (_components.find(id) != _components.end())
+			auto it = _components.find(id);
+			if (it != _components.end())
 			{
-				_components[id].Erase(entity);
+				it->second.Erase(entity);
 			}
 			else throw std::runtime_error("Component not found");
 		}
@@ -167,8 +168,7 @@ namespace Concerto::Ecs
 		}
 
 		/**
-		 * @brief Get the number of entities with a component
-		 * @tparam Comp The component type
+		 * @brief Get the number of entities
 		 * @return The number of entities
 		 */
 		[[nodiscard]] Entity::Id GetEntityCount() const
@@ -176,7 +176,7 @@ namespace Concerto::Ecs
 			return _nextId;
 		}
 
-	private:
+	 private:
 		std::size_t _nextId = 0;
 		container_type _components;
 	};
