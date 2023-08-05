@@ -6,7 +6,7 @@
 #define CONCERTO_WORLD_HPP
 
 #include <memory>
-#include "Concerto/Core/SparseArray.hpp"
+#include "Concerto/Core/SparseVector.hpp"
 #include "Registry.hpp"
 #include "System.hpp"
 
@@ -98,7 +98,7 @@ namespace Concerto::Ecs
 
 	private:
 		Concerto::Ecs::Registry _registry;
-		SparseArray<std::unique_ptr<System::System>> _systems;
+		SparseVector<std::unique_ptr<System::System>> _systems;
 	};
 }
 

@@ -14,7 +14,7 @@
 #include "Component.hpp"
 #include "Components/Name.hpp"
 #include "Entity.hpp"
-#include "Concerto/Core/SparseArray.hpp"
+#include "Concerto/Core/SparseVector.hpp"
 
 namespace Concerto::Ecs
 {
@@ -25,7 +25,7 @@ namespace Concerto::Ecs
 	class Registry
 	{
 	 public:
-		using map_element = SparseArray<std::any>;
+		using map_element = SparseVector<std::any>;
 		using container_type = std::unordered_map<Component::Id, map_element>;
 		using iterator = container_type::iterator;
 		using const_iterator = container_type::const_iterator;
