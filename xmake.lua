@@ -13,7 +13,7 @@ target('Concerto')
     add_headerfiles('Include/(Concerto/*.hpp)','Include/(Concerto/Ecs/*.hpp)', 'Include/(Concerto/Ecs/Components/*.hpp)', 'Include/(Concerto/Ecs/Systems/*.hpp)')
     add_headerfiles('Include/(Concerto/*.inl)','Include/(Concerto/Ecs/*.inl)', 'Include/(Concerto/Ecs/Components/*.inl)', 'Include/(Concerto/Ecs/Systems/*.inl)')
     add_files('Src/**.cpp')
-    add_packages('ConcertoCore', 'ConcertoGraphics')
+    add_packages('ConcertoCore', 'ConcertoGraphics', {public = true})
 
 target('ConcertoUnitTests')
     set_kind('binary')
