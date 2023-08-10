@@ -11,10 +11,11 @@
 #include <bitset>
 #include <exception>
 #include <string>
-#include "Component.hpp"
-#include "Components/Name.hpp"
-#include "Entity.hpp"
-#include "Concerto/Core/SparseVector.hpp"
+#include <Concerto/Core/SparseVector.hpp>
+
+#include "Concerto/Ecs/Component.hpp"
+#include "Concerto/Ecs/Components/Name.hpp"
+#include "Concerto/Ecs/Entity.hpp"
 
 namespace Concerto::Ecs
 {

@@ -5,7 +5,7 @@
 #ifndef CONCERTO_INCLUDE_ECS_COMPONENTS_COLOR_HPP_
 #define CONCERTO_INCLUDE_ECS_COMPONENTS_COLOR_HPP_
 
-#include "Concerto/Core/Math/Vector.hpp"
+#include <Concerto/Core/Math/Vector.hpp>
 
 namespace Concerto
 {

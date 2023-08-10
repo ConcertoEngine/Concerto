@@ -6,9 +6,10 @@
 #define CONCERTO_WORLD_HPP
 
 #include <memory>
-#include "Concerto/Core/SparseVector.hpp"
-#include "Registry.hpp"
-#include "System.hpp"
+#include <Concerto/Core/SparseVector.hpp>
+
+#include "Concerto/Ecs/Registry.hpp"
+#include "Concerto/Ecs/Systems/System.hpp"
 
 namespace Concerto::Ecs
 {

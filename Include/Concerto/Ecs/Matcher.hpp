@@ -6,7 +6,7 @@
 #define CONCERTO_MATCHER_HPP
 
 #include <set>
-#include "Registry.hpp"
+#include "Concerto/Ecs/Registry.hpp"
 
 namespace Concerto::Ecs
 {

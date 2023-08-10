@@ -5,17 +5,12 @@
 #include <algorithm>
 #include <cassert>
 
-#include "Matcher.hpp"
-#include "Entity.hpp"
-#include "Observer.hpp"
+#include "Concerto/Ecs/Matcher.hpp"
+#include "Concerto/Ecs/Entity.hpp"
 
 namespace Concerto::Ecs
 {
-	Matcher::Matcher(Registry& registry) : _registry(&registry), _observer(nullptr)
-	{
-	}
-
-	Matcher::Matcher(Registry& registry, Observer& observer) : _registry(&registry), _observer(&observer)
+	Matcher::Matcher(Registry& registry) : _registry(&registry)
 	{
 	}
 
@@ -55,7 +50,6 @@ namespace Concerto::Ecs
 		}
 		if (_observer && _matchingEntities.find(entity) == _matchingEntities.end())
 		{
-			_observer->OnMatch(*this, entity, true);
 			_matchingEntities.insert(entity);
 		}
 		return true;

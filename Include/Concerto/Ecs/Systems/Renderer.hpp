@@ -10,8 +10,8 @@
 #include <Concerto/Graphics/ImGUI.hpp>
 #include <Concerto/Graphics/Window/Input.hpp>
 
-#include "System.hpp"
-#include "Matcher.hpp"
+#include "Concerto/Ecs/Systems/System.hpp"
+#include "Concerto/Ecs/Matcher.hpp"
 
 namespace Concerto::Ecs::System
 {

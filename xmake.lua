@@ -12,13 +12,12 @@ local function AddIncludesToTarget(includes)
 end
 
 target('Concerto')
-    set_kind('static')
+    set_kind('shared')
     set_symbols('debug')
     set_warnings('allextra')
     set_languages('cxx20')
-    
-    AddIncludesToTarget({'Include/(Concerto/*.hpp)','Include/(Concerto/Ecs/*.hpp)', 'Include/(Concerto/Ecs/Components/*.hpp)', 'Include/(Concerto/Ecs/Systems/*.hpp)'})
-    AddIncludesToTarget({'Include/(Concerto/*.inl)','Include/(Concerto/Ecs/*.inl)', 'Include/(Concerto/Ecs/Components/*.inl)', 'Include/(Concerto/Ecs/Systems/*.inl)'})
+
+    AddIncludesToTarget({'Include/', 'Include/Concerto', 'Include/Concerto/Ecs/', 'Include/Concerto/Ecs/Components/', 'Include/Concerto/Ecs/Systems/'})
 
     add_headerfiles('Include/(Concerto/*.hpp)','Include/(Concerto/Ecs/*.hpp)', 'Include/(Concerto/Ecs/Components/*.hpp)', 'Include/(Concerto/Ecs/Systems/*.hpp)')
     add_headerfiles('Include/(Concerto/*.inl)','Include/(Concerto/Ecs/*.inl)', 'Include/(Concerto/Ecs/Components/*.inl)', 'Include/(Concerto/Ecs/Systems/*.inl)')
@@ -34,7 +33,6 @@ target('ConcertoUnitTests')
     set_warnings('everything')
     set_languages('cxx20')
     set_optimize('none')
-    add_includedirs('Include', 'Include/Ecs', 'Include/Ecs/Systems')
     add_files('tests/*.cpp')
     add_packages('gtest', 'ConcertoCore')
     add_deps('Concerto')

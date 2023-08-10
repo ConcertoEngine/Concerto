@@ -5,8 +5,8 @@
 #ifndef CONCERTO_INCLUDE_ECS_COMPONENTS_DIRECTIONALLIGHT_HPP_
 #define CONCERTO_INCLUDE_ECS_COMPONENTS_DIRECTIONALLIGHT_HPP_
 
-#include "Concerto/Core/Math/Quaternion.hpp"
-#include "Concerto/Core/Math/Vector.hpp"
+#include <Concerto/Core/Math/Quaternion.hpp>
+#include <Concerto/Core/Math/Vector.hpp>
 #include "Color.hpp"
 
 namespace Concerto

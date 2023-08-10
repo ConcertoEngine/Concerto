@@ -5,8 +5,8 @@
 #ifndef CONCERTO_SYSTEM_HPP
 #define CONCERTO_SYSTEM_HPP
 
-#include "Concerto/Core/Config.hpp"
-#include "Registry.hpp"
+#include <Concerto/Core/Config.hpp>
+#include "Concerto/Ecs/Registry.hpp"
 
 namespace Concerto::Ecs::System
 {
