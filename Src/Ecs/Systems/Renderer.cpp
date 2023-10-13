@@ -3,82 +3,71 @@
 //
 
 #include <Concerto/Core/Math/Transform.hpp>
-#include "Concerto/Ecs/Systems/Renderer.hpp"
+#include <Concerto/Core/Logger.hpp>
+#include <entt/entt.hpp>
+#include <Nazara/Graphics/Components/GraphicsComponent.hpp>
+#include <Nazara/Utility/Components/NodeComponent.hpp>
 
-using namespace Concerto::Graphics;
+#include "Concerto/Ecs/Systems/Renderer.hpp"
 
 namespace Concerto::Ecs::System
 {
-	Renderer::Renderer(const Config::Object& data, Graphics::RendererInfo rendererInfo) :
-		System(data),
-		_rendererInfo(std::move(rendererInfo)),
-		_window(std::make_unique<GlfW3>(rendererInfo.applicationName, rendererInfo.width, rendererInfo.height)),
-		_renderer(rendererInfo, *_window),
-		imGui(_renderer.GetImGUIContext())
+
+	template<typename Component>
+	void AddToEnttRegistry(Registry& r, entt::registry& registry)
 	{
-		_window->RegisterCursorPosCallback([&](AWindow<GLFWwindow>& window, double x, double y)
-		{
-//		  imGui->UpdateMousePosition(x, y);
-		  Concerto::MouseEvent mouseEvent{};
-		  static double deltaX = 0, deltaY = 0;
-		  deltaX = x - deltaX;
-		  deltaY = y - deltaY;
-		  mouseEvent.type = Concerto::MouseEvent::Moved;
-		  mouseEvent.mouseMove.x = x;
-		  mouseEvent.mouseMove.y = y;
-		  mouseEvent.mouseMove.deltaX = deltaX;
-		  mouseEvent.mouseMove.deltaY = deltaY;
-		  Input::Instance().TriggerMouseEvent(mouseEvent, _deltaTime);
-		  deltaX = x;
-		  deltaY = y;
-		});
+		Matcher matcher(r);
+		matcher.AllOf<Component>();
 
-		_window->RegisterMouseButtonCallback([&](AWindow<GLFWwindow>& window, int button, int action, int mods)
-		{
-//		  imGui->UpdateMouseButton(button, action == GLFW_PRESS);
-		  Concerto::MouseEvent mouseEvent{};
-		  mouseEvent.type = Concerto::MouseEvent::Button;
-		  mouseEvent.button.button = Concerto::MouseButton::Button(button);
-		  mouseEvent.button.triggerType = Concerto::TriggerType(action);
-		  Input::Instance().TriggerMouseEvent(mouseEvent, _deltaTime);
+		matcher.SetRegistry(r);
+		matcher.ForEachMatching([&](Registry&, Entity::Id id) {
+			if (registry.valid(entt::entity(id)))
+			{
+				auto& component = r.GetComponent<Component>(id);
+				registry.emplace<Component>(entt::entity(id), component);
+			}
+			else
+			{
+				entt::entity e = registry.create(entt::entity(id));
+				auto& component = r.GetComponent<Component>(id);
+				registry.emplace<Component>(e, component);
+			}
 		});
-
-		_window->RegisterKeyCallback([&](AWindow<GLFWwindow>& window, Key key, int scancode, int action, int mods)
-		{
-		  Concerto::KeyEvent keyEvent{};
-		  keyEvent.key = Concerto::Key(key);
-		  keyEvent.triggerType = Concerto::TriggerType(action);
-		  Input::Instance().TriggerKeyEvent(keyEvent, _deltaTime);
-		});
-		_transformMeshMatcher.AllOf<Math::Transform, MeshPtr>();
-		_cameraMatcher.AllOf<Graphics::Camera>();
 	}
 
-	void Renderer::Update(float deltaTime, Registry& r)
+	Renderer::Renderer(const Config::Object& data) :
+		System(data),
+		_app(),
+		_windowing(&_app.AddComponent<Nz::AppWindowingComponent>()),
+		_ecsComponent(&_app.AddComponent<Nz::AppEntitySystemComponent>()),
+		_window(&_windowing->CreateWindow(Nz::VideoMode(1280, 720), "Concerto")),
+		_world(&_ecsComponent->AddWorld<Nz::EnttWorld>()),
+		_renderSystem(&_world->AddSystem<Nz::RenderSystem>()),
+		_windowSwapchain(&_renderSystem->CreateSwapchain(*_window))
 	{
-		_deltaTime = deltaTime;
-		_window->PopEvent();
-		_transformMeshMatcher.SetRegistry(r);
-		_cameraMatcher.SetRegistry(r);
+	}
 
-		_transformMeshMatcher.ForEachMatching([&](Registry& registry, Entity::Id entity)
-		{
-		  auto& transform = registry.GetComponent<Math::Transform>(entity);
-		  auto& mesh = registry.GetComponent<MeshPtr>(entity);
-		  _renderer.DrawObject(mesh, transform.GetLocation(), transform.GetRotation(), transform.GetScale());
-		});
+	void Renderer::Update(float deltaTime, Registry &r)
+	{
+		entt::registry registry;
+		AddToEnttRegistry<Nz::NodeComponent>(r, registry);
+		AddToEnttRegistry<Nz::GraphicsComponent>(r, registry);
+		AddToEnttRegistry<Nz::CameraComponent>(r, registry);
+		
+		Logger::Debug(registry.size());
+		_app.Update(Nz::Time::FromDuration(std::chrono::duration<float>(deltaTime)));
+	}
 
-		Graphics::Camera* cameraComponent = nullptr;
+	Nz::WindowSwapchain& Renderer::GetWindowSwapchain()
+	{
+		CONCERTO_ASSERT(_windowSwapchain);
+		return *_windowSwapchain;
+	}
 
-		_cameraMatcher.ForEachMatching([&](Registry& registry, Entity::Id entity)
-		{
-		  auto& cam = registry.GetComponent<Graphics::Camera>(entity);
-		  cameraComponent = &cam;
-		});
-
-		if (cameraComponent == nullptr)
-			return;
-		_renderer.Draw(*cameraComponent);
+	const Nz::WindowSwapchain& Renderer::GetWindowSwapchain() const
+	{
+		CONCERTO_ASSERT(_windowSwapchain);
+		return *_windowSwapchain;
 	}
 
 	bool Renderer::ShouldClose() const
