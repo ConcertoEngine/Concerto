@@ -5,34 +5,41 @@
 #ifndef CONCERTO_INCLUDE_ECS_SYSTEMS_RENDERER_HPP_
 #define CONCERTO_INCLUDE_ECS_SYSTEMS_RENDERER_HPP_
 
-#include <Concerto/Core/StructuredData.hpp>
-#include <Concerto/Graphics/VulkanRenderer.hpp>
-#include <Concerto/Graphics/ImGUI.hpp>
-#include <Concerto/Graphics/Window/Input.hpp>
-
 #include "Concerto/Ecs/Systems/System.hpp"
 #include "Concerto/Ecs/Matcher.hpp"
+
+#include <Nazara/Core.hpp>
+#include <Nazara/Graphics.hpp>
+#include <Nazara/Platform/AppWindowingComponent.hpp>
+
+namespace Nz
+{
+	class Nz::AppWindowingComponent;
+}
 
 namespace Concerto::Ecs::System
 {
 	class Renderer : public System
 	{
 	 public:
-		explicit Renderer(const Config::Object &data, Graphics::RendererInfo rendererInfo);
+		explicit Renderer(const Config::Object &data);
+
 		virtual void Update(float deltaTime, Registry &r) override;
 
-		bool ShouldClose() const;
-	 private:
-		Graphics::RendererInfo _rendererInfo;
-		Graphics::GLFW3WindowPtr _window;
-		Graphics::VulkanRenderer _renderer;
-		Concerto::Graphics::ImGUI* imGui;
-		Input _input;
-		float _deltaTime = 0;
-		Matcher _transformMeshMatcher;
-		Matcher _cameraMatcher;
-	};
+		Nz::WindowSwapchain& GetWindowSwapchain();
 
+		const Nz::WindowSwapchain& GetWindowSwapchain() const;
+
+		bool ShouldClose() const;
+	private:
+		Nz::Application<Nz::Graphics> _app;
+		Nz::AppWindowingComponent* _windowing;
+		Nz::AppEntitySystemComponent* _ecsComponent;
+		Nz::Window* _window;
+		Nz::EnttWorld* _world;
+		Nz::RenderSystem* _renderSystem;
+		Nz::WindowSwapchain* _windowSwapchain;
+	};
 } // Concerto
 
 #endif //CONCERTO_INCLUDE_ECS_SYSTEMS_RENDERER_HPP_

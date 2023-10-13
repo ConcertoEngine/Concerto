@@ -103,9 +103,11 @@ namespace Concerto::Ecs
 			if (it == _components.end())
 			{
 				auto newCompIt = _components.emplace(id, map_element());
-				return std::any_cast<Comp&>(newCompIt.first->second.Emplace(entity, std::forward<Args>(args)...));
+				std::any any = Comp(std::forward<Args>(args)...);
+				return std::any_cast<Comp&>(newCompIt.first->second.Emplace(entity, std::move(any)));
 			}
-			auto& sparseArrayElement = it->second.Emplace(entity, std::forward<Args>(args)...);
+			std::any any = Comp(std::forward<Args>(args)...);
+			auto& sparseArrayElement = it->second.Emplace(entity, std::move(any));
 			return std::any_cast<Comp&>(sparseArrayElement);
 		}
 
