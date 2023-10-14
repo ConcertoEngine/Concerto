@@ -3,7 +3,7 @@
 //
 
 #include <gtest/gtest.h>
-#include "Matcher.hpp"
+#include "Concerto/Ecs/Matcher.hpp"
 
 using namespace Concerto::Ecs;
 
