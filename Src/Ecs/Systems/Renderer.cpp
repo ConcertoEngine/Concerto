@@ -23,8 +23,17 @@ namespace Concerto::Ecs::System
 		matcher.ForEachMatching([&](Registry&, Entity::Id id) {
 			if (registry.valid(entt::entity(id)))
 			{
-				auto& component = r.GetComponent<Component>(id);
-				registry.emplace<Component>(entt::entity(id), component);
+				//check if the entity has already the component
+				if (!registry.all_of<Component>(entt::entity(id)))
+				{
+					auto& component = r.GetComponent<Component>(id);
+					registry.emplace<Component>(entt::entity(id), component);
+				}
+				else
+				{
+					
+				}
+
 			}
 			else
 			{
@@ -49,12 +58,12 @@ namespace Concerto::Ecs::System
 
 	void Renderer::Update(float deltaTime, Registry &r)
 	{
-		entt::registry registry;
+		entt::registry& registry = _world->GetRegistry();
+		registry.clear();
 		AddToEnttRegistry<Nz::NodeComponent>(r, registry);
 		AddToEnttRegistry<Nz::GraphicsComponent>(r, registry);
 		AddToEnttRegistry<Nz::CameraComponent>(r, registry);
 		
-		Logger::Debug(registry.size());
 		_app.Update(Nz::Time::FromDuration(std::chrono::duration<float>(deltaTime)));
 	}
 

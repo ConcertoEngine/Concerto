@@ -33,10 +33,10 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] const char** argv)
 		
 		auto cameraEntity = r.CreateEntity();
 		{
+			r.EmplaceComponent<Nz::NodeComponent>(cameraEntity);
 			auto& cameraComponent = r.EmplaceComponent<Nz::CameraComponent>(cameraEntity, &windowSwapchain, Nz::ProjectionType::Orthographic);
 			cameraComponent.UpdateClearColor(Nz::Color(0.46f, 0.48f, 0.84f, 1.f));
 		}
-		
 		
 		Nz::SimpleTextDrawer textDrawer;
 		textDrawer.SetText("Hello world !");
@@ -77,6 +77,7 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] const char** argv)
 
 			while (updateRemainingTime >= timeUpdate)
 			{
+				textDrawer.SetCharacterSize(textDrawer.GetCharacterSize() + 1);
 				world.Update(updateRemainingTime);
 				updateRemainingTime -= timeUpdate;
 			}
