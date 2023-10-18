@@ -10,14 +10,10 @@
 
 #include <Nazara/Core.hpp>
 #include <Nazara/Graphics.hpp>
-#include <Nazara/Platform/AppWindowingComponent.hpp>
+#include <Nazara/Renderer.hpp>
+#include <Nazara/Platform.hpp>
 
-namespace Nz
-{
-	class Nz::AppWindowingComponent;
-}
-
-namespace Concerto::Ecs::System
+namespace Concerto
 {
 	class Renderer : public System
 	{
@@ -31,14 +27,18 @@ namespace Concerto::Ecs::System
 		const Nz::WindowSwapchain& GetWindowSwapchain() const;
 
 		bool ShouldClose() const;
+
+		Nz::Window& GetWindow();
 	private:
 		Nz::Application<Nz::Graphics> _app;
+		std::shared_ptr<Nz::RenderDevice> _renderDevice;
 		Nz::AppWindowingComponent* _windowing;
-		Nz::AppEntitySystemComponent* _ecsComponent;
 		Nz::Window* _window;
-		Nz::EnttWorld* _world;
-		Nz::RenderSystem* _renderSystem;
-		Nz::WindowSwapchain* _windowSwapchain;
+		Nz::WindowSwapchain _windowSwapchain;
+		Nz::WorldInstancePtr _modelInstance;
+		Nz::ElementRendererRegistry _elementRegistry;
+		Nz::ForwardFramePipeline _framePipeline;
+		std::size_t _worldInstanceIndex1;
 	};
 } // Concerto
 

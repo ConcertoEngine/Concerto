@@ -10,77 +10,82 @@
 
 #include "Concerto/Ecs/Systems/Renderer.hpp"
 
-namespace Concerto::Ecs::System
+namespace Concerto
 {
-
-	template<typename Component>
-	void AddToEnttRegistry(Registry& r, entt::registry& registry)
-	{
-		Matcher matcher(r);
-		matcher.AllOf<Component>();
-
-		matcher.SetRegistry(r);
-		matcher.ForEachMatching([&](Registry&, Entity::Id id) {
-			if (registry.valid(entt::entity(id)))
-			{
-				//check if the entity has already the component
-				if (!registry.all_of<Component>(entt::entity(id)))
-				{
-					auto& component = r.GetComponent<Component>(id);
-					registry.emplace<Component>(entt::entity(id), component);
-				}
-				else
-				{
-					
-				}
-
-			}
-			else
-			{
-				entt::entity e = registry.create(entt::entity(id));
-				auto& component = r.GetComponent<Component>(id);
-				registry.emplace<Component>(e, component);
-			}
-		});
-	}
-
 	Renderer::Renderer(const Config::Object& data) :
 		System(data),
 		_app(),
+		_renderDevice(Nz::Graphics::Instance()->GetRenderDevice()),
 		_windowing(&_app.AddComponent<Nz::AppWindowingComponent>()),
-		_ecsComponent(&_app.AddComponent<Nz::AppEntitySystemComponent>()),
 		_window(&_windowing->CreateWindow(Nz::VideoMode(1280, 720), "Concerto")),
-		_world(&_ecsComponent->AddWorld<Nz::EnttWorld>()),
-		_renderSystem(&_world->AddSystem<Nz::RenderSystem>()),
-		_windowSwapchain(&_renderSystem->CreateSwapchain(*_window))
+		_windowSwapchain(_renderDevice, *_window),
+		_modelInstance(std::make_shared<Nz::WorldInstance>()),
+		_elementRegistry(),
+		_framePipeline(_elementRegistry),
+		_worldInstanceIndex1(_framePipeline.RegisterWorldInstance(_modelInstance))
 	{
+		_modelInstance->UpdateWorldMatrix(Nz::Matrix4f::Translate(Nz::Vector3f::Forward() * 2 + Nz::Vector3f::Left()));
+		_window->GetEventHandler().OnEvent.Connect([&](const Nz::WindowEventHandler*, const Nz::WindowEvent& event)
+			{
+				switch (event.type)
+				{
+				case Nz::WindowEventType::KeyPressed:
+				{
+					break;
+				}
+				case Nz::WindowEventType::MouseMoved:
+				{
+					break;
+				}
+				case Nz::WindowEventType::Resized:
+				{
+					break;
+				}
+				default:
+					break;
+				}
+			});
 	}
 
 	void Renderer::Update(float deltaTime, Registry &r)
 	{
-		entt::registry& registry = _world->GetRegistry();
-		registry.clear();
-		AddToEnttRegistry<Nz::NodeComponent>(r, registry);
-		AddToEnttRegistry<Nz::GraphicsComponent>(r, registry);
-		AddToEnttRegistry<Nz::CameraComponent>(r, registry);
-		
+		Nz::RenderFrame frame = _windowSwapchain.AcquireFrame();
+		if (!frame)
+		{
+			std::this_thread::sleep_for(std::chrono::milliseconds(1));
+			return;
+		}
+
+		//viewerInstance.UpdateViewMatrix(Nz::Matrix4f::TransformInverse(viewerPos, camAngles));
+		//viewerInstance.UpdateEyePosition(viewerPos);
+
+		_framePipeline.Render(frame);
+
+		frame.Present();
+
+		// On incrémente le compteur de FPS improvisé
+		_window->SetTitle("Concerto - " + std::to_string(1000.f / deltaTime));
 		_app.Update(Nz::Time::FromDuration(std::chrono::duration<float>(deltaTime)));
 	}
 
 	Nz::WindowSwapchain& Renderer::GetWindowSwapchain()
 	{
-		CONCERTO_ASSERT(_windowSwapchain);
-		return *_windowSwapchain;
+		return _windowSwapchain;
 	}
 
 	const Nz::WindowSwapchain& Renderer::GetWindowSwapchain() const
 	{
-		CONCERTO_ASSERT(_windowSwapchain);
-		return *_windowSwapchain;
+		return _windowSwapchain;
 	}
 
 	bool Renderer::ShouldClose() const
 	{
 		return false;
+	}
+
+	Nz::Window& Renderer::GetWindow()
+	{
+		CONCERTO_ASSERT(_window != nullptr);
+		return *_window;
 	}
 } // Concerto
