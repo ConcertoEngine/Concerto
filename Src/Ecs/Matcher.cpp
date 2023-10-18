@@ -8,7 +8,7 @@
 #include "Concerto/Ecs/Matcher.hpp"
 #include "Concerto/Ecs/Entity.hpp"
 
-namespace Concerto::Ecs
+namespace Concerto
 {
 	Matcher::Matcher(Registry& registry) : _registry(&registry)
 	{
@@ -22,15 +22,15 @@ namespace Concerto::Ecs
 	[[nodiscard]] bool Matcher::Matches(Entity::Id entity)
 	{
 		assert(_registry != nullptr);
-		if (!_allOf.empty() && std::any_of(_allOf.begin(), _allOf.end(), [&](Component::Id id)
-		{
-			return !_registry->HasComponent(entity, id);
-		}))
+		if (!_allOf.empty() && std::any_of(_allOf.begin(), _allOf.end(), [&](ComponentHelper::Id id)
+			{
+				return !_registry->HasComponent(entity, id);
+			}))
 		{
 			_matchingEntities.erase(entity);
 			return false;
 		}
-		if (!_noneOf.empty() && std::any_of(_noneOf.begin(), _noneOf.end(), [&](Component::Id id)
+		if (!_noneOf.empty() && std::any_of(_noneOf.begin(), _noneOf.end(), [&](ComponentHelper::Id id)
 		{
 			return _registry->HasComponent(entity, id);
 		}))
@@ -48,7 +48,7 @@ namespace Concerto::Ecs
 			_matchingEntities.erase(entity);
 			return false;
 		}
-		if (_observer && _matchingEntities.find(entity) == _matchingEntities.end())
+		if (_matchingEntities.find(entity) == _matchingEntities.end())
 		{
 			_matchingEntities.insert(entity);
 		}

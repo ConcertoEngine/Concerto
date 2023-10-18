@@ -7,7 +7,7 @@
 
 #include <string>
 
-namespace Concerto::Ecs
+namespace Concerto
 {
 	struct Name
 	{

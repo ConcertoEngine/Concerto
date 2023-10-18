@@ -17,7 +17,7 @@
 #include "Concerto/Ecs/Components/Name.hpp"
 #include "Concerto/Ecs/Entity.hpp"
 
-namespace Concerto::Ecs
+namespace Concerto
 {
 	/**
 	 * @brief The Registry class is the main class of the ECS.
@@ -27,7 +27,7 @@ namespace Concerto::Ecs
 	{
 	 public:
 		using map_element = SparseVector<std::any>;
-		using container_type = std::unordered_map<Component::Id, map_element>;
+		using container_type = std::unordered_map<ComponentHelper::Id, map_element>;
 		using iterator = container_type::iterator;
 		using const_iterator = container_type::const_iterator;
 
@@ -98,7 +98,7 @@ namespace Concerto::Ecs
 		template<typename Comp, typename... Args>
 		Comp& EmplaceComponent(Entity::Id entity, Args&& ...args)
 		{
-			Component::Id id = Component::GetId<Comp>();
+			ComponentHelper::Id id = ComponentHelper::GetId<Comp>();
 			auto it = _components.find(id);
 			if (it == _components.end())
 			{
@@ -119,7 +119,7 @@ namespace Concerto::Ecs
 		template<typename Comp>
 		void RemoveComponent(Entity::Id entity)
 		{
-			Component::Id id = Component::GetId<Comp>();
+			ComponentHelper::Id id = ComponentHelper::GetId<Comp>();
 			auto it = _components.find(id);
 			if (it != _components.end())
 			{
@@ -137,7 +137,7 @@ namespace Concerto::Ecs
 		template<class Comp>
 		Comp& GetComponent(Entity::Id entity)
 		{
-			Component::Id id = Component::GetId<Comp>();
+			ComponentHelper::Id id = ComponentHelper::GetId<Comp>();
 			auto it = _components.find(id);
 			if (it == _components.end())
 				throw std::runtime_error("Component not found");
@@ -154,7 +154,7 @@ namespace Concerto::Ecs
 		template<typename Comp>
 		[[nodiscard]] bool HasComponent(Entity::Id entity) const
 		{
-			Component::Id id = Component::GetId<Comp>();
+			ComponentHelper::Id id = ComponentHelper::GetId<Comp>();
 			auto it = _components.find(id);
 			return it != _components.end() && it->second.Has(entity);
 		}
@@ -164,7 +164,7 @@ namespace Concerto::Ecs
 		 * @param entity The entity to check for the component
 		 * @return True if the entity Has the component, false otherwise
 		 */
-		[[nodiscard]] bool HasComponent(Entity::Id entity, Component::Id id) const
+		[[nodiscard]] bool HasComponent(Entity::Id entity, ComponentHelper::Id id) const
 		{
 			auto it = _components.find(id);
 			return it != _components.end() && it->second.Has(entity);

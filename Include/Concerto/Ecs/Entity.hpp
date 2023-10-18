@@ -7,7 +7,7 @@
 
 #include <cstddef>
 
-namespace Concerto::Ecs::Entity
+namespace Concerto::Entity
 {
 	using Id = std::size_t;
 }
