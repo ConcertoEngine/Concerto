@@ -5,7 +5,7 @@
 #include <gtest/gtest.h>
 #include "Concerto/Ecs/Matcher.hpp"
 
-using namespace Concerto::Ecs;
+using namespace Concerto;
 
 struct Component1
 {

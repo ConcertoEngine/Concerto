@@ -7,6 +7,7 @@
 #include <Concerto/Core/Math/Transform.hpp>
 #include <Concerto/Core/Math/Matrix.hpp>
 #include <Concerto/Core/Math/Quaternion.hpp>
+#include <Concerto/Core/Logger.hpp>
 
 #include <Concerto/Ecs/Registry.hpp>
 #include <Concerto/Ecs/World.hpp>
@@ -28,36 +29,51 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] const char** argv)
 		const Config::Object& config = structuredData.GetConfig();
 		World world;
 		Registry& r = world.GetRegistry();
-		auto& renderer = world.AddSystem<Ecs::System::Renderer>(config);
+
+		auto& renderer = world.AddSystem<Renderer>(config);
 		auto& windowSwapchain = renderer.GetWindowSwapchain();
+		Nz::Vector2f windowSize = Nz::Vector2f(windowSwapchain.GetSize());
+
+		Nz::Camera camera = Nz::Camera(&windowSwapchain);
+		Nz::ViewerInstance& viewerInstance = camera.GetViewerInstance();
+		viewerInstance.UpdateTargetSize(Nz::Vector2f(windowSwapchain.GetSize()));
+		viewerInstance.UpdateProjViewMatrices(Nz::Matrix4f::Perspective(Nz::DegreeAnglef(70.f), windowSize.x / windowSize.y, 0.1f, 1000.f), Nz::Matrix4f::Translate(Nz::Vector3f::Backward() * 1));
+		viewerInstance.UpdateNearFarPlanes(0.1f, 1000.f);
+		renderer.SetViewerInstance(viewerInstance, camera);
+		camera.UpdateClearColor(Nz::Color(0.46f, 0.48f, 0.84f, 1.f));
+
 		
-		auto cameraEntity = r.CreateEntity();
+		Nz::TextureParams texParams;
+		texParams.renderDevice = Nz::Graphics::Instance()->GetRenderDevice();
+
+		Nz::TextureParams srgbTexParams = texParams;
+		srgbTexParams.loadFormat = Nz::PixelFormat::RGBA8_SRGB;
+		
+		std::shared_ptr<Nz::MaterialInstance> materialInstance = Nz::MaterialInstance::Instantiate(Nz::MaterialType::PhysicallyBased);
+		materialInstance->SetTextureProperty("BaseColorMap", Nz::Texture::LoadFromFile(config["AssetsPath"].AsString() + "Concerto.png", srgbTexParams));
+
+		std::shared_ptr<Nz::Mesh> sphereMesh = std::make_shared<Nz::Mesh>();
+		sphereMesh->CreateStatic();
+		sphereMesh->BuildSubMesh(Nz::Primitive::UVSphere(1.f, 50, 50));
+		sphereMesh->SetMaterialCount(1);
+		sphereMesh->GenerateNormalsAndTangents();
+
+		std::shared_ptr<Nz::GraphicalMesh> gfxMesh = Nz::GraphicalMesh::BuildFromMesh(*sphereMesh);
+
+		
+		auto modelEntity = r.CreateEntity();
 		{
-			r.EmplaceComponent<Nz::NodeComponent>(cameraEntity);
-			auto& cameraComponent = r.EmplaceComponent<Nz::CameraComponent>(cameraEntity, &windowSwapchain, Nz::ProjectionType::Orthographic);
-			cameraComponent.UpdateClearColor(Nz::Color(0.46f, 0.48f, 0.84f, 1.f));
+			Nz::Model& model = r.EmplaceComponent<Nz::Model>(modelEntity, std::move(gfxMesh));
+			for (std::size_t i = 0; i < model.GetSubMeshCount(); ++i)
+				model.SetMaterial(i, materialInstance);
+		}
+
+		auto lightEntity = r.CreateEntity();
+		{
+			auto& light = r.EmplaceComponent<Nz::DirectionalLight>(lightEntity);
+			light.UpdateRotation(Nz::EulerAnglesf(-45.f, 0.f, 0.f));
 		}
 		
-		Nz::SimpleTextDrawer textDrawer;
-		textDrawer.SetText("Hello world !");
-		textDrawer.SetCharacterSize(72);
-		textDrawer.SetTextOutlineThickness(4.f);
-		
-		std::shared_ptr<Nz::TextSprite> textSprite = std::make_shared<Nz::TextSprite>();
-		textSprite->Update(textDrawer);
-
-		auto textEntity = r.CreateEntity();
-		{
-			auto& nodeComponent = r.EmplaceComponent<Nz::NodeComponent>(textEntity);
-
-			auto& gfxComponent = r.EmplaceComponent<Nz::GraphicsComponent>(textEntity);
-			gfxComponent.AttachRenderable(textSprite);
-
-			Nz::Boxf textBox = textSprite->GetAABB();
-			Nz::Vector2ui windowSize = windowSwapchain.GetSize();
-			nodeComponent.SetPosition(windowSize.x / 2 - textBox.width / 2, windowSize.y / 2 - textBox.height / 2);
-		}
-
 		float cameraSpeed = 150.f;
 
 		std::chrono::steady_clock::time_point lastFrameTime = std::chrono::steady_clock::now();
@@ -77,7 +93,6 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] const char** argv)
 
 			while (updateRemainingTime >= timeUpdate)
 			{
-				textDrawer.SetCharacterSize(textDrawer.GetCharacterSize() + 1);
 				world.Update(updateRemainingTime);
 				updateRemainingTime -= timeUpdate;
 			}

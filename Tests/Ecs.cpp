@@ -7,7 +7,7 @@
 #include "Concerto/Core/Math/Transform.hpp"
 #include "Concerto/Core/Math/Vector.hpp"
 
-using namespace Concerto::Ecs;
+using namespace Concerto;
 using namespace Concerto::Math;
 using namespace Concerto;
 
