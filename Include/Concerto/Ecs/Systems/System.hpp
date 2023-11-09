@@ -8,7 +8,7 @@
 #include <Concerto/Core/Config.hpp>
 #include "Concerto/Ecs/Registry.hpp"
 
-namespace Concerto::Ecs::System
+namespace Concerto
 {
 	/**
 	 * @brief Interface for a system.

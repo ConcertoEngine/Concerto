@@ -7,7 +7,7 @@
 
 #include <cstddef>
 
-namespace Concerto::Ecs
+namespace Concerto
 {
 	class Component
 	{

@@ -48,8 +48,8 @@ namespace Concerto::Ecs
 		T& AddSystem(Args&& ...args)
 		{
 			static_assert(std::is_base_of_v<System::System, T>, "T must inherit from System");
-			auto id = System::System::GetId<T>();
-			std::unique_ptr<System::System> systemPtr = std::make_unique<T>(std::forward<Args>(args)...);
+			auto id = System::GetId<T>();
+			std::unique_ptr<System> systemPtr = std::make_unique<T>(std::forward<Args>(args)...);
 			auto& system = _systems.Emplace(id, std::move(systemPtr));
 			return static_cast<T&>(*system);
 		}
@@ -98,8 +98,8 @@ namespace Concerto::Ecs
 		}
 
 	private:
-		Concerto::Ecs::Registry _registry;
-		SparseVector<std::unique_ptr<System::System>> _systems;
+		Concerto::Registry _registry;
+		SparseVector<std::unique_ptr<System>> _systems;
 	};
 }
 

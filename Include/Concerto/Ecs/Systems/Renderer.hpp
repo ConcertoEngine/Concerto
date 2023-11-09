@@ -23,12 +23,12 @@ namespace Concerto
 		virtual void Update(float deltaTime, Registry &r) override;
 
 		Nz::WindowSwapchain& GetWindowSwapchain();
-
 		const Nz::WindowSwapchain& GetWindowSwapchain() const;
+		Nz::Window& GetWindow();
 
 		bool ShouldClose() const;
-
-		Nz::Window& GetWindow();
+		
+		void SetViewerInstance(Nz::ViewerInstance& viewerInstance, Nz::Camera& camera);
 	private:
 		Nz::Application<Nz::Graphics> _app;
 		std::shared_ptr<Nz::RenderDevice> _renderDevice;
@@ -39,6 +39,7 @@ namespace Concerto
 		Nz::ElementRendererRegistry _elementRegistry;
 		Nz::ForwardFramePipeline _framePipeline;
 		std::size_t _worldInstanceIndex1;
+		Nz::ViewerInstance* _viewerInstance;
 	};
 } // Concerto
 

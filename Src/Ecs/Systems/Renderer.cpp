@@ -22,7 +22,8 @@ namespace Concerto
 		_modelInstance(std::make_shared<Nz::WorldInstance>()),
 		_elementRegistry(),
 		_framePipeline(_elementRegistry),
-		_worldInstanceIndex1(_framePipeline.RegisterWorldInstance(_modelInstance))
+		_worldInstanceIndex1(_framePipeline.RegisterWorldInstance(_modelInstance)),
+		_viewerInstance(nullptr)
 	{
 		_modelInstance->UpdateWorldMatrix(Nz::Matrix4f::Translate(Nz::Vector3f::Forward() * 2 + Nz::Vector3f::Left()));
 		_window->GetEventHandler().OnEvent.Connect([&](const Nz::WindowEventHandler*, const Nz::WindowEvent& event)
@@ -49,21 +50,49 @@ namespace Concerto
 
 	void Renderer::Update(float deltaTime, Registry &r)
 	{
+		if (_viewerInstance == nullptr)
+		{
+			CONCERTO_ASSERT_FALSE;
+			Logger::Debug("ViewerInstance is not set, skipping rendering, please set it with Renderer::SetViewerInstance");
+			return;
+		}
+
 		Nz::RenderFrame frame = _windowSwapchain.AcquireFrame();
 		if (!frame)
 		{
 			std::this_thread::sleep_for(std::chrono::milliseconds(1));
 			return;
 		}
+		Nz::Recti scissorBox(Nz::Vector2i::Zero(), Nz::Vector2i(_window->GetSize()));
+		Matcher modelMatcher;
+		modelMatcher.AllOf<Nz::Model>();
+		modelMatcher.SetRegistry(r);
+		modelMatcher.ForEachMatching([&](Registry& registry, Entity::Id entity)
+		{
+			auto& model = registry.GetComponent<Nz::Model>(entity);
+			_framePipeline.RegisterRenderable(_worldInstanceIndex1, Nz::FramePipeline::NoSkeletonInstance, &model, 0xFFFFFFFF, scissorBox);
+		});
 
-		//viewerInstance.UpdateViewMatrix(Nz::Matrix4f::TransformInverse(viewerPos, camAngles));
-		//viewerInstance.UpdateEyePosition(viewerPos);
+		Matcher lightMatcher;
+		lightMatcher.AllOf<Nz::DirectionalLight>();
+		lightMatcher.SetRegistry(r);
+		lightMatcher.ForEachMatching([&](Registry& registry, Entity::Id entity)
+		{
+			auto& light = registry.GetComponent<Nz::DirectionalLight>(entity);
+			_framePipeline.RegisterLight(&light, 0xFFFFFFFF);
+		});
+		
+		Nz::EulerAnglesf camAngles(0.f, 0.f, 0.f);
+		Nz::Quaternionf camQuat(camAngles);
+		Nz::Vector3f viewerPos = Nz::Vector3f::Zero();
+
+		_viewerInstance->UpdateViewMatrix(Nz::Matrix4f::TransformInverse(viewerPos, camAngles));
+		_viewerInstance->UpdateEyePosition(viewerPos);
 
 		_framePipeline.Render(frame);
 
 		frame.Present();
 
-		// On incrémente le compteur de FPS improvisé
 		_window->SetTitle("Concerto - " + std::to_string(1000.f / deltaTime));
 		_app.Update(Nz::Time::FromDuration(std::chrono::duration<float>(deltaTime)));
 	}
@@ -81,6 +110,14 @@ namespace Concerto
 	bool Renderer::ShouldClose() const
 	{
 		return false;
+	}
+
+	void Renderer::SetViewerInstance(Nz::ViewerInstance& viewerInstance, Nz::Camera& camera)
+	{
+		if (_viewerInstance != nullptr)
+			_framePipeline.UnregisterViewer(0);
+		_viewerInstance = &viewerInstance;
+		_framePipeline.RegisterViewer(&camera, 0, {});
 	}
 
 	Nz::Window& Renderer::GetWindow()

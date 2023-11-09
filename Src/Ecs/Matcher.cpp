@@ -8,7 +8,7 @@
 #include "Concerto/Ecs/Matcher.hpp"
 #include "Concerto/Ecs/Entity.hpp"
 
-namespace Concerto::Ecs
+namespace Concerto
 {
 	Matcher::Matcher(Registry& registry) : _registry(&registry)
 	{
@@ -47,10 +47,6 @@ namespace Concerto::Ecs
 		{
 			_matchingEntities.erase(entity);
 			return false;
-		}
-		if (_observer && _matchingEntities.find(entity) == _matchingEntities.end())
-		{
-			_matchingEntities.insert(entity);
 		}
 		return true;
 	}

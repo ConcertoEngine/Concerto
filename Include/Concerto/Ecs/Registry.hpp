@@ -17,7 +17,7 @@
 #include "Concerto/Ecs/Components/Name.hpp"
 #include "Concerto/Ecs/Entity.hpp"
 
-namespace Concerto::Ecs
+namespace Concerto
 {
 	/**
 	 * @brief The Registry class is the main class of the ECS.
@@ -103,10 +103,10 @@ namespace Concerto::Ecs
 			if (it == _components.end())
 			{
 				auto newCompIt = _components.emplace(id, map_element());
-				std::any any = Comp(std::forward<Args>(args)...);
+				auto any = std::make_any<Comp>(std::forward<Args>(args)...);
 				return std::any_cast<Comp&>(newCompIt.first->second.Emplace(entity, std::move(any)));
 			}
-			std::any any = Comp(std::forward<Args>(args)...);
+			auto any = std::make_any<Comp>(std::forward<Args>(args)...);
 			auto& sparseArrayElement = it->second.Emplace(entity, std::move(any));
 			return std::any_cast<Comp&>(sparseArrayElement);
 		}

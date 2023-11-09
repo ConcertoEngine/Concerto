@@ -8,10 +8,8 @@
 #include <set>
 #include "Concerto/Ecs/Registry.hpp"
 
-namespace Concerto::Ecs
+namespace Concerto
 {
-	class Observer;
-
 	/**
 	 * @brief The Matcher class allows you to specify criteria for matching entities in a registry.
 	 */
@@ -24,13 +22,6 @@ namespace Concerto::Ecs
 		 * @param registry The registry to match against.
 		 */
 		explicit Matcher(Registry& registry);
-
-		/**
-		 * @brief Constructs a new Matcher for the given registry.
-		 * @param registry The registry to match against.
-		 * @param observer observer An observer that will be notified when an entity is added or removed from the set of matching entities.
-		 */
-		Matcher(Registry& registry, Observer& observer);
 
 		/**
 		 * @brief Sets the registry by replacing the existing one.
@@ -53,7 +44,7 @@ namespace Concerto::Ecs
 		template<typename... Component>
 		Matcher& AllOf()
 		{
-			(_allOf.insert(Ecs::Component::GetId<Component>()), ...);
+			(_allOf.insert(Concerto::Component::GetId<Component>()), ...);
 			return *this;
 		}
 
@@ -65,7 +56,7 @@ namespace Concerto::Ecs
 		template<typename... Component>
 		Matcher& NoneOf()
 		{
-			(_noneOf.insert(Ecs::Component::GetId<Component>()), ...);
+			(_noneOf.insert(Concerto::Component::GetId<Component>()), ...);
 			return *this;
 		}
 
@@ -110,7 +101,6 @@ namespace Concerto::Ecs
 		}
 	private:
 		Registry* _registry = nullptr;
-		Observer* _observer = nullptr;
 		std::set<Component::Id> _allOf;
 		std::set<Component::Id> _noneOf;
 		std::set<Entity::Id> _excluded;
