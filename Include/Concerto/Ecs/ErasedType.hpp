@@ -8,6 +8,8 @@
 #include <typeinfo>
 #include <utility>
 
+#include <Concerto/Core/Types.hpp>
+
 #include "Concerto/Ecs/Component.hpp"
 
 namespace Concerto
@@ -37,7 +39,7 @@ namespace Concerto
 				CONCERTO_ASSERT_FALSE; // Trying to cast to a wrong type
 				throw std::bad_cast();
 			}
-			return static_cast<T>(static_cast<RawType*>(_ptr));
+			return static_cast<T>(*static_cast<RawType*>(_ptr));
 		}
 
 	protected:
@@ -91,7 +93,7 @@ namespace Concerto
 	template<typename T, class... Args>
 	inline ErasedType MakeErasedType(Args&&... args)
 	{
-		return ErasedTypeImpl<T>(std::forward<Args>(args)...);
+		return std::move(ErasedTypeImpl<T>(std::forward<Args>(args)...));
 	}
 }
 #endif //CONCERTO_ERASEDTYPE_HPP
