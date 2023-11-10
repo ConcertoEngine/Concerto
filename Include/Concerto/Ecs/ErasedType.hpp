@@ -16,10 +16,10 @@ namespace Concerto
 	{
 	public:
 		ErasedType() = delete;
+		virtual ~ErasedType();
 
 	protected:
-		explicit ErasedType(ComponentHelper::Id id, void *data) : _id(id), _data(data) {}
-		virtual ~ErasedType() = 0;
+		explicit ErasedType(ComponentHelper::Id id, void *data) : _id(id), _ptr(data) {}
 
 	public:
 		template<typename T>
@@ -31,43 +31,46 @@ namespace Concerto
 		template<typename T>
 		T As()
 		{
-			if (_id != ComponentHelper::GetId<T>())
-				throw std::bad_cast();
 			using RawType = std::remove_reference_t<std::remove_pointer_t<T>> ;
-			return static_cast<T>(*static_cast<RawType*>(_data));
+			if (_id != ComponentHelper::GetId<typename std::remove_const<RawType>::type>())
+			{
+				CONCERTO_ASSERT_FALSE; // Trying to cast to a wrong type
+				throw std::bad_cast();
+			}
+			return static_cast<T>(static_cast<RawType*>(_ptr));
 		}
 
 	protected:
-		void* _data;
+		void* _ptr;
 		ComponentHelper::Id _id;
 	};
 
-	ErasedType::~ErasedType() = default;
+	inline ErasedType::~ErasedType() = default;
 
 	template <typename T>
 	class ErasedTypeImpl : public ErasedType
 	{
 	public:
 		template<typename... Args>
-		ErasedTypeImpl(Args&& ...args) :
+		explicit ErasedTypeImpl(Args&& ...args) :
 			ErasedType(ComponentHelper::GetId<T>(), &_data),
 			_data(std::forward<Args>(args)...)
 		{
 		}
 
-		ErasedTypeImpl(T& data) :
+		explicit ErasedTypeImpl(T& data) :
 			ErasedType(ComponentHelper::GetId<T>(), &_data),
 			_data(data)
 		{
 		}
 
-		ErasedTypeImpl(T&& data) :
+		explicit ErasedTypeImpl(T&& data) :
 			ErasedType(ComponentHelper::GetId<T>(), &_data),
 			_data(std::move(data))
 		{
 		}
 
-		~ErasedTypeImpl() {};
+		~ErasedTypeImpl() override = default;
 
 		ErasedTypeImpl& operator=(const ErasedTypeImpl& other)
 		{
