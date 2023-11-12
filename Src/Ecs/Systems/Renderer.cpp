@@ -12,7 +12,6 @@
 
 namespace Concerto::Ecs::System
 {
-
 	template<typename Component>
 	void AddToEnttRegistry(Registry& r, entt::registry& registry)
 	{

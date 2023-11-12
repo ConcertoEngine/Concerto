@@ -7,6 +7,7 @@
 
 #include <typeinfo>
 #include <utility>
+#include <memory>
 
 #include <Concerto/Core/Types.hpp>
 
@@ -52,6 +53,26 @@ namespace Concerto
 	public:
 		ErasedType() = delete;
 		~ErasedType() = default;
+		ErasedType(const ErasedType& other) = default;
+		ErasedType(ErasedType&& other) noexcept = default;
+		
+		template<typename T, typename... Args>
+		ErasedType operator=(Args&& ...args)
+		{
+			return Make<T>(std::forward<Args>(args)...);
+		}
+
+		template<typename T>
+		ErasedType operator=(const T& data)
+		{
+			return Make<T>(data);
+		}
+
+		template<typename T>
+		ErasedType operator=(T&& data)
+		{
+			return Make<T>(std::move(data));
+		}
 
 	private:
 		explicit ErasedType(ComponentHelper::Id id, std::unique_ptr<void*> data) : _id(id), _data(std::move(data)) {}

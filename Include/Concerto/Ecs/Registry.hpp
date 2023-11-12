@@ -7,7 +7,6 @@
 
 #include <unordered_map>
 #include <vector>
-#include <any>
 #include <bitset>
 #include <exception>
 #include <string>
@@ -16,6 +15,7 @@
 #include "Concerto/Ecs/Component.hpp"
 #include "Concerto/Ecs/Components/Name.hpp"
 #include "Concerto/Ecs/Entity.hpp"
+#include "Concerto//Ecs/ErasedType.hpp"
 
 namespace Concerto
 {
@@ -26,7 +26,7 @@ namespace Concerto
 	class Registry
 	{
 	 public:
-		using map_element = SparseVector<std::any>;
+		using map_element = SparseVector<ErasedType>;
 		using container_type = std::unordered_map<ComponentHelper::Id, map_element>;
 		using iterator = container_type::iterator;
 		using const_iterator = container_type::const_iterator;
@@ -103,12 +103,12 @@ namespace Concerto
 			if (it == _components.end())
 			{
 				auto newCompIt = _components.emplace(id, map_element());
-				std::any any = Comp(std::forward<Args>(args)...);
-				return std::any_cast<Comp&>(newCompIt.first->second.Emplace(entity, std::move(any)));
+				ErasedType erasedType = ErasedType::Make<Comp>(std::forward<Args>(args)...);
+				return newCompIt.first->second.Emplace(entity, std::move(erasedType)).As<Comp&>();
 			}
-			std::any any = Comp(std::forward<Args>(args)...);
-			auto& sparseArrayElement = it->second.Emplace(entity, std::move(any));
-			return std::any_cast<Comp&>(sparseArrayElement);
+			ErasedType erasedType = ErasedType::Make<Comp>(std::forward<Args>(args)...);
+			auto& sparseArrayElement = it->second.Emplace(entity, std::move(erasedType));
+			return sparseArrayElement.As<Comp&>();
 		}
 
 		/**
@@ -143,7 +143,7 @@ namespace Concerto
 				throw std::runtime_error("Component not found");
 			if (!it->second.Has(entity))
 				throw std::runtime_error("Component not found");
-			return std::any_cast<Comp&>(it->second[entity]);
+			return it->second[entity].As<Comp&>();
 		}
 
 		/**
