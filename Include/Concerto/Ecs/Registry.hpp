@@ -7,7 +7,6 @@
 
 #include <unordered_map>
 #include <vector>
-#include <any>
 #include <bitset>
 #include <exception>
 #include <string>
@@ -16,6 +15,7 @@
 #include "Concerto/Ecs/Component.hpp"
 #include "Concerto/Ecs/Components/Name.hpp"
 #include "Concerto/Ecs/Entity.hpp"
+#include "Concerto//Ecs/ErasedType.hpp"
 
 namespace Concerto
 {
@@ -26,8 +26,8 @@ namespace Concerto
 	class Registry
 	{
 	 public:
-		using map_element = SparseVector<std::any>;
-		using container_type = std::unordered_map<Component::Id, map_element>;
+		using map_element = SparseVector<ErasedType>;
+		using container_type = std::unordered_map<ComponentHelper::Id, map_element>;
 		using iterator = container_type::iterator;
 		using const_iterator = container_type::const_iterator;
 
@@ -98,17 +98,17 @@ namespace Concerto
 		template<typename Comp, typename... Args>
 		Comp& EmplaceComponent(Entity::Id entity, Args&& ...args)
 		{
-			Component::Id id = Component::GetId<Comp>();
+			ComponentHelper::Id id = ComponentHelper::GetId<Comp>();
 			auto it = _components.find(id);
 			if (it == _components.end())
 			{
 				auto newCompIt = _components.emplace(id, map_element());
-				auto any = std::make_any<Comp>(std::forward<Args>(args)...);
-				return std::any_cast<Comp&>(newCompIt.first->second.Emplace(entity, std::move(any)));
+				ErasedType erasedType = ErasedType::Make<Comp>(std::forward<Args>(args)...);
+				return newCompIt.first->second.Emplace(entity, std::move(erasedType)).As<Comp&>();
 			}
-			auto any = std::make_any<Comp>(std::forward<Args>(args)...);
-			auto& sparseArrayElement = it->second.Emplace(entity, std::move(any));
-			return std::any_cast<Comp&>(sparseArrayElement);
+			ErasedType erasedType = ErasedType::Make<Comp>(std::forward<Args>(args)...);
+			auto& sparseArrayElement = it->second.Emplace(entity, std::move(erasedType));
+			return sparseArrayElement.As<Comp&>();
 		}
 
 		/**
@@ -119,7 +119,7 @@ namespace Concerto
 		template<typename Comp>
 		void RemoveComponent(Entity::Id entity)
 		{
-			Component::Id id = Component::GetId<Comp>();
+			ComponentHelper::Id id = ComponentHelper::GetId<Comp>();
 			auto it = _components.find(id);
 			if (it != _components.end())
 			{
@@ -137,13 +137,13 @@ namespace Concerto
 		template<class Comp>
 		Comp& GetComponent(Entity::Id entity)
 		{
-			Component::Id id = Component::GetId<Comp>();
+			ComponentHelper::Id id = ComponentHelper::GetId<Comp>();
 			auto it = _components.find(id);
 			if (it == _components.end())
 				throw std::runtime_error("Component not found");
 			if (!it->second.Has(entity))
 				throw std::runtime_error("Component not found");
-			return std::any_cast<Comp&>(it->second[entity]);
+			return it->second[entity].As<Comp&>();
 		}
 
 		/**
@@ -154,7 +154,7 @@ namespace Concerto
 		template<typename Comp>
 		[[nodiscard]] bool HasComponent(Entity::Id entity) const
 		{
-			Component::Id id = Component::GetId<Comp>();
+			ComponentHelper::Id id = ComponentHelper::GetId<Comp>();
 			auto it = _components.find(id);
 			return it != _components.end() && it->second.Has(entity);
 		}
@@ -164,7 +164,7 @@ namespace Concerto
 		 * @param entity The entity to check for the component
 		 * @return True if the entity Has the component, false otherwise
 		 */
-		[[nodiscard]] bool HasComponent(Entity::Id entity, Component::Id id) const
+		[[nodiscard]] bool HasComponent(Entity::Id entity, ComponentHelper::Id id) const
 		{
 			auto it = _components.find(id);
 			return it != _components.end() && it->second.Has(entity);

@@ -11,7 +11,7 @@
 #include "Concerto/Ecs/Registry.hpp"
 #include "Concerto/Ecs/Systems/System.hpp"
 
-namespace Concerto::Ecs
+namespace Concerto
 {
 	/**
 	 * @brief The World class is the main class of the ECS.
@@ -47,7 +47,7 @@ namespace Concerto::Ecs
 		template<typename T, typename... Args>
 		T& AddSystem(Args&& ...args)
 		{
-			static_assert(std::is_base_of_v<System::System, T>, "T must inherit from System");
+			static_assert(std::is_base_of_v<System, T>, "T must inherit from System");
 			auto id = System::GetId<T>();
 			std::unique_ptr<System> systemPtr = std::make_unique<T>(std::forward<Args>(args)...);
 			auto& system = _systems.Emplace(id, std::move(systemPtr));
@@ -62,8 +62,8 @@ namespace Concerto::Ecs
 		template<typename T>
 		[[nodiscard]] bool HasSystem() const
 		{
-			static_assert(std::is_base_of_v<System::System, T>, "T must inherit from System");
-			return _systems.Has(System::System::GetId<T>());
+			static_assert(std::is_base_of_v<System, T>, "T must inherit from System");
+			return _systems.Has(System::GetId<T>());
 		}
 
 		/**
@@ -75,7 +75,7 @@ namespace Concerto::Ecs
 		template<typename T>
 		T& GetSystem()
 		{
-			static_assert(std::is_base_of_v<System::System, T>, "T must inherit from System");
+			static_assert(std::is_base_of_v<System, T>, "T must inherit from System");
 			if (!HasSystem<T>())
 				throw std::runtime_error("System not found");
 			auto id = System::System::GetId<T>();
@@ -93,7 +93,7 @@ namespace Concerto::Ecs
 			static_assert(std::is_base_of_v<System::System, T>, "T must inherit from System");
 			if (!HasSystem<T>())
 				throw std::runtime_error("System not found");
-			auto id = System::System::GetId<T>();
+			auto id = System::GetId<T>();
 			_systems.Erase(id);
 		}
 

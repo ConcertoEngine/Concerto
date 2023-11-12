@@ -5,7 +5,7 @@
 
 #include "Concerto/Ecs/World.hpp"
 
-namespace Concerto::Ecs
+namespace Concerto
 {
 	void World::Update(float deltaTime)
 	{

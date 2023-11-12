@@ -16,7 +16,6 @@
 #include <Nazara/Utility/SimpleTextDrawer.hpp>
 #include <Nazara/Utility/Components/NodeComponent.hpp>
 
-using namespace Concerto::Ecs;
 using namespace Concerto;
 using namespace Concerto::Math;
 

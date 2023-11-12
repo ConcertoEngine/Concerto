@@ -2,8 +2,8 @@
 // Created by arthur on 26/12/2022.
 //
 
-#include <gtest/gtest.h>
 #include "Concerto/Ecs/Matcher.hpp"
+#include <gtest/gtest.h>
 
 using namespace Concerto;
 

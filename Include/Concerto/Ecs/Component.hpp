@@ -2,14 +2,14 @@
 // Created by arthur on 18/05/22.
 //
 
-#ifndef CONCERTO_COMPONENT_HPP
-#define CONCERTO_COMPONENT_HPP
+#ifndef CONCERTO_COMPONENTHELPER_HPP
+#define CONCERTO_COMPONENTHELPER_HPP
 
 #include <cstddef>
 
 namespace Concerto
 {
-	class Component
+	class ComponentHelper
 	{
 	public:
 		using Id = std::size_t;
@@ -25,4 +25,4 @@ namespace Concerto
 	};
 }
 
-#endif //CONCERTO_COMPONENT_HPP
+#endif //CONCERTO_COMPONENTHELPER_HPP

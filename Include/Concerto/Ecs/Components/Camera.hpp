@@ -8,7 +8,7 @@
 #include <Concerto/Core/Math/Vector.hpp>
 #include <Concerto/Core/Math/Quaternion.hpp>
 
-namespace Concerto::Ecs
+namespace Concerto
 {
 	struct Camera
 	{
