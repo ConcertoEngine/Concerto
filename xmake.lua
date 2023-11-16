@@ -36,7 +36,7 @@ target('ConcertoUnitTests')
     set_warnings('allextra')
     set_languages('cxx20')
     add_files('Tests/*.cpp')
-    add_packages('gtest', 'ConcertoCore')
+    add_packages('gtest')
     add_deps('Concerto')
 
 includes('Xmake/Rules/*.lua')

@@ -15,18 +15,18 @@
 
 namespace Concerto
 {
-	class Renderer : public System
+	class Renderer final : public System
 	{
 	 public:
 		explicit Renderer(const Config::Object &data);
 
-		virtual void Update(float deltaTime, Registry &r) override;
+		void Update(float deltaTime, Registry &r) override;
 
 		Nz::WindowSwapchain& GetWindowSwapchain();
-		const Nz::WindowSwapchain& GetWindowSwapchain() const;
+		[[nodiscard]] const Nz::WindowSwapchain& GetWindowSwapchain() const;
 		Nz::Window& GetWindow();
 
-		bool ShouldClose() const;
+		[[nodiscard]] bool ShouldClose() const;
 		
 		void SetViewerInstance(Nz::ViewerInstance& viewerInstance, Nz::Camera& camera);
 	private:
@@ -38,8 +38,12 @@ namespace Concerto
 		Nz::WorldInstancePtr _modelInstance;
 		Nz::ElementRendererRegistry _elementRegistry;
 		Nz::ForwardFramePipeline _framePipeline;
-		std::size_t _worldInstanceIndex1;
 		Nz::ViewerInstance* _viewerInstance;
+
+		struct WorldInstanceIndex
+		{
+			std::size_t index;
+		};
 	};
 } // Concerto
 

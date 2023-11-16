@@ -31,6 +31,13 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] const char** argv)
 
 		auto& renderer = world.AddSystem<Renderer>(config);
 		auto& windowSwapchain = renderer.GetWindowSwapchain();
+		auto& window = renderer.GetWindow();
+
+
+		Nz::EulerAnglesf camAngles(0.f, 0.f, 0.f);
+		Nz::Quaternionf camQuat(camAngles);
+		Nz::Vector3f viewerPos = Nz::Vector3f::Zero();
+
 		Nz::Vector2f windowSize = Nz::Vector2f(windowSwapchain.GetSize());
 
 		Nz::Camera camera = Nz::Camera(&windowSwapchain);
@@ -49,7 +56,7 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] const char** argv)
 		srgbTexParams.loadFormat = Nz::PixelFormat::RGBA8_SRGB;
 		
 		std::shared_ptr<Nz::MaterialInstance> materialInstance = Nz::MaterialInstance::Instantiate(Nz::MaterialType::PhysicallyBased);
-		materialInstance->SetTextureProperty("BaseColorMap", Nz::Texture::LoadFromFile(config["AssetsPath"].AsString() + "Concerto.png", srgbTexParams));
+		materialInstance->SetTextureProperty("BaseColorMap", Nz::Texture::LoadFromFile(config["AssetsPath"].AsString() + "/Concerto.png", srgbTexParams));
 
 		std::shared_ptr<Nz::Mesh> sphereMesh = std::make_shared<Nz::Mesh>();
 		sphereMesh->CreateStatic();
@@ -58,7 +65,6 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] const char** argv)
 		sphereMesh->GenerateNormalsAndTangents();
 
 		std::shared_ptr<Nz::GraphicalMesh> gfxMesh = Nz::GraphicalMesh::BuildFromMesh(*sphereMesh);
-
 		
 		auto modelEntity = r.CreateEntity();
 		{
@@ -72,13 +78,40 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] const char** argv)
 			auto& light = r.EmplaceComponent<Nz::DirectionalLight>(lightEntity);
 			light.UpdateRotation(Nz::EulerAnglesf(-45.f, 0.f, 0.f));
 		}
+		Nz::Mouse::SetRelativeMouseMode(true);
+		window.GetEventHandler().OnEvent.Connect([&](const Nz::WindowEventHandler*, const Nz::WindowEvent& event)
+		{
+			switch (event.type)
+			{
+			case Nz::WindowEventType::MouseMoved:
+			{
+				const float sensitivity = 0.3f;
+
+				camAngles.yaw = camAngles.yaw - event.mouseMove.deltaX * sensitivity;
+				camAngles.yaw.Normalize();
+				camAngles.pitch = Nz::Clamp(camAngles.pitch - event.mouseMove.deltaY * sensitivity, -89.f, 89.f);
+				camQuat = camAngles;
+				break;
+			}
+
+			case Nz::WindowEventType::Resized:
+			{
+				const Nz::Vector2ui newWindowSize = window.GetSize();
+				viewerInstance.UpdateProjectionMatrix(Nz::Matrix4f::Perspective(Nz::DegreeAnglef(70.f), float(newWindowSize.x) / newWindowSize.y, 0.1f, 1000.f));
+				viewerInstance.UpdateTargetSize(Nz::Vector2f(newWindowSize));
+				break;
+			}
+
+			default:
+				break;
+			}
+		});
 		
-		float cameraSpeed = 150.f;
 
 		std::chrono::steady_clock::time_point lastFrameTime = std::chrono::steady_clock::now();
 		float deltaTime = 0.f;
-		float timeStep = 0.02f;
-		float timeUpdate = 0.016666f;
+		constexpr float timeStep = 0.02f;
+		constexpr float timeUpdate = 0.016666f;
 		float stepUpdateRemainingTime = 0.f;
 		float updateRemainingTime = 0.f;
 
@@ -93,6 +126,8 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] const char** argv)
 			while (updateRemainingTime >= timeUpdate)
 			{
 				world.Update(updateRemainingTime);
+				viewerInstance.UpdateViewMatrix(Nz::Matrix4f::TransformInverse(viewerPos, camAngles));
+				viewerInstance.UpdateEyePosition(viewerPos);
 				updateRemainingTime -= timeUpdate;
 			}
 

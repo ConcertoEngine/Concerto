@@ -22,30 +22,9 @@ namespace Concerto
 		_modelInstance(std::make_shared<Nz::WorldInstance>()),
 		_elementRegistry(),
 		_framePipeline(_elementRegistry),
-		_worldInstanceIndex1(_framePipeline.RegisterWorldInstance(_modelInstance)),
 		_viewerInstance(nullptr)
 	{
 		_modelInstance->UpdateWorldMatrix(Nz::Matrix4f::Translate(Nz::Vector3f::Forward() * 2 + Nz::Vector3f::Left()));
-		_window->GetEventHandler().OnEvent.Connect([&](const Nz::WindowEventHandler*, const Nz::WindowEvent& event)
-			{
-				switch (event.type)
-				{
-				case Nz::WindowEventType::KeyPressed:
-				{
-					break;
-				}
-				case Nz::WindowEventType::MouseMoved:
-				{
-					break;
-				}
-				case Nz::WindowEventType::Resized:
-				{
-					break;
-				}
-				default:
-					break;
-				}
-			});
 	}
 
 	void Renderer::Update(float deltaTime, Registry &r)
@@ -63,32 +42,35 @@ namespace Concerto
 			std::this_thread::sleep_for(std::chrono::milliseconds(1));
 			return;
 		}
-		Nz::Recti scissorBox(Nz::Vector2i::Zero(), Nz::Vector2i(_window->GetSize()));
-		Matcher modelMatcher;
-		modelMatcher.AllOf<Nz::Model>();
-		modelMatcher.SetRegistry(r);
+		const Nz::Recti scissorBox(Nz::Vector2i::Zero(), Nz::Vector2i(_window->GetSize()));
+		Matcher modelMatcher(r);
+		modelMatcher.AllOf<Nz::Model, WorldInstanceIndex>();
 		modelMatcher.ForEachMatching([&](Registry& registry, Entity::Id entity)
 		{
-			auto& model = registry.GetComponent<Nz::Model>(entity);
-			_framePipeline.RegisterRenderable(_worldInstanceIndex1, Nz::FramePipeline::NoSkeletonInstance, &model, 0xFFFFFFFF, scissorBox);
+			const auto& model = registry.GetComponent<Nz::Model>(entity);
+			const auto& [index] = registry.GetComponent<WorldInstanceIndex>(entity);
+			_framePipeline.RegisterRenderable(index, Nz::FramePipeline::NoSkeletonInstance, &model, 0xFFFFFFFF, scissorBox);
 		});
 
-		Matcher lightMatcher;
+		modelMatcher = Matcher(r);
+		modelMatcher.AllOf<Nz::Model>().NoneOf<WorldInstanceIndex>();
+		modelMatcher.ForEachMatching([&](Registry& registry, Entity::Id entity)
+		{
+			const auto& model = registry.GetComponent<Nz::Model>(entity);
+			WorldInstanceIndex worldInstanceIndex = {_framePipeline.RegisterWorldInstance(_modelInstance)};
+			registry.EmplaceComponent<WorldInstanceIndex>(entity, worldInstanceIndex);
+			_framePipeline.RegisterRenderable(worldInstanceIndex.index, Nz::FramePipeline::NoSkeletonInstance, &model, 0xFFFFFFFF, scissorBox);
+		});
+
+
+		Matcher lightMatcher(r);
 		lightMatcher.AllOf<Nz::DirectionalLight>();
-		lightMatcher.SetRegistry(r);
 		lightMatcher.ForEachMatching([&](Registry& registry, Entity::Id entity)
 		{
-			auto& light = registry.GetComponent<Nz::DirectionalLight>(entity);
+			const auto& light = registry.GetComponent<Nz::DirectionalLight>(entity);
 			_framePipeline.RegisterLight(&light, 0xFFFFFFFF);
 		});
 		
-		Nz::EulerAnglesf camAngles(0.f, 0.f, 0.f);
-		Nz::Quaternionf camQuat(camAngles);
-		Nz::Vector3f viewerPos = Nz::Vector3f::Zero();
-
-		_viewerInstance->UpdateViewMatrix(Nz::Matrix4f::TransformInverse(viewerPos, camAngles));
-		_viewerInstance->UpdateEyePosition(viewerPos);
-
 		_framePipeline.Render(frame);
 
 		frame.Present();
@@ -117,7 +99,7 @@ namespace Concerto
 		if (_viewerInstance != nullptr)
 			_framePipeline.UnregisterViewer(0);
 		_viewerInstance = &viewerInstance;
-		_framePipeline.RegisterViewer(&camera, 0, {});
+		_framePipeline.RegisterViewer(&camera, 0);
 	}
 
 	Nz::Window& Renderer::GetWindow()
