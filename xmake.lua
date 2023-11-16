@@ -13,7 +13,7 @@ if is_plat("windows") then
 end
 
 target('Concerto')
-    set_kind('static')
+    set_kind('shared')
     if is_mode('debug') then
         set_symbols('debug')
     end
