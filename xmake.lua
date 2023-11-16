@@ -29,6 +29,7 @@ target('Concerto')
 
     add_packages('ConcertoCore', {public = true})
     add_packages('nazaraengine', {public = true})
+    add_deps('ConcertoCore', 'nazaraengine')
 
 target('ConcertoUnitTests')
     set_kind('binary')
