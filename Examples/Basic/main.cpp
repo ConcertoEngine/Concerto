@@ -7,6 +7,7 @@
 #include <Concerto/Core/Math/Transform.hpp>
 #include <Concerto/Core/Math/Matrix.hpp>
 #include <Concerto/Core/Math/Quaternion.hpp>
+#include <Concerto/Core/Logger.hpp>
 
 #include <Concerto/Ecs/Registry.hpp>
 #include <Concerto/Ecs/World.hpp>
@@ -27,58 +28,90 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] const char** argv)
 		const Config::Object& config = structuredData.GetConfig();
 		World world;
 		Registry& r = world.GetRegistry();
+
 		auto& renderer = world.AddSystem<Renderer>(config);
 		auto& windowSwapchain = renderer.GetWindowSwapchain();
-		auto windowSize = Nz::Vector2f(renderer.GetWindow().GetSize());
+		auto& window = renderer.GetWindow();
 
-		/*------------------------------------ Create entities ------------------------------------*/
 
-		// Create a camera
-		auto cameraEntity = r.CreateEntity();
-		auto& camera = r.EmplaceComponent<Nz::Camera>(cameraEntity, &windowSwapchain);
+		Nz::EulerAnglesf camAngles(0.f, 0.f, 0.f);
+		Nz::Quaternionf camQuat(camAngles);
+		Nz::Vector3f viewerPos = Nz::Vector3f::Zero();
 
-		// create mesh
+		Nz::Vector2f windowSize = Nz::Vector2f(windowSwapchain.GetSize());
 
-		auto meshEntity = r.CreateEntity();
+		Nz::Camera camera = Nz::Camera(&windowSwapchain);
+		Nz::ViewerInstance& viewerInstance = camera.GetViewerInstance();
+		viewerInstance.UpdateTargetSize(Nz::Vector2f(windowSwapchain.GetSize()));
+		viewerInstance.UpdateProjViewMatrices(Nz::Matrix4f::Perspective(Nz::DegreeAnglef(70.f), windowSize.x / windowSize.y, 0.1f, 1000.f), Nz::Matrix4f::Translate(Nz::Vector3f::Backward() * 1));
+		viewerInstance.UpdateNearFarPlanes(0.1f, 1000.f);
+		renderer.SetViewerInstance(viewerInstance, camera);
+		camera.UpdateClearColor(Nz::Color(0.46f, 0.48f, 0.84f, 1.f));
+
+		
+		Nz::TextureParams texParams;
+		texParams.renderDevice = Nz::Graphics::Instance()->GetRenderDevice();
+
+		Nz::TextureParams srgbTexParams = texParams;
+		srgbTexParams.loadFormat = Nz::PixelFormat::RGBA8_SRGB;
+		
+		std::shared_ptr<Nz::MaterialInstance> materialInstance = Nz::MaterialInstance::Instantiate(Nz::MaterialType::PhysicallyBased);
+		materialInstance->SetTextureProperty("BaseColorMap", Nz::Texture::LoadFromFile(config["AssetsPath"].AsString() + "/Concerto.png", srgbTexParams));
+
+		std::shared_ptr<Nz::Mesh> sphereMesh = std::make_shared<Nz::Mesh>();
+		sphereMesh->CreateStatic();
+		sphereMesh->BuildSubMesh(Nz::Primitive::UVSphere(1.f, 50, 50));
+		sphereMesh->SetMaterialCount(1);
+		sphereMesh->GenerateNormalsAndTangents();
+
+		std::shared_ptr<Nz::GraphicalMesh> gfxMesh = Nz::GraphicalMesh::BuildFromMesh(*sphereMesh);
+		
+		auto modelEntity = r.CreateEntity();
 		{
-			Nz::Mesh sphereMesh;
-			sphereMesh.CreateStatic();
-			sphereMesh.BuildSubMesh(Nz::Primitive::UVSphere(1.f, 50, 50));
-			sphereMesh.SetMaterialCount(1);
-			sphereMesh.GenerateNormalsAndTangents();
-			auto& gfxMesh = r.EmplaceComponent<std::shared_ptr<Nz::GraphicalMesh>>(meshEntity, Nz::GraphicalMesh::BuildFromMesh(sphereMesh));
-			
-			std::shared_ptr<Nz::MaterialInstance> materialInstance = Nz::MaterialInstance::Instantiate(Nz::MaterialType::PhysicallyBased);
-			materialInstance->SetValueProperty("BaseColorMap", Nz::MaterialSettings::Value(Nz::Color(0, 255, 0)));
-			auto& model = r.EmplaceComponent<Nz::Model>(meshEntity, gfxMesh);
+			Nz::Model& model = r.EmplaceComponent<Nz::Model>(modelEntity, std::move(gfxMesh));
 			for (std::size_t i = 0; i < model.GetSubMeshCount(); ++i)
-        model.SetMaterial(i, materialInstance);
+				model.SetMaterial(i, materialInstance);
 		}
 
-		// Create viewer instance
-
-		auto viewerEntity = r.CreateEntity();
-		Quaternionf rotation = EulerAnglesf(0.f, 0.f, 0.f).ToQuaternion();
-		r.EmplaceComponent<Transform>(viewerEntity, Vector3f(0.f, 0.f, 0.f), rotation, Vector3f(1.f, 1.f, 1.f));
-		Nz::ViewerInstance& viewerInstance = camera.GetViewerInstance();
-		viewerInstance.UpdateTargetSize(windowSize);
-		viewerInstance.UpdateProjViewMatrices(Nz::Matrix4f::Perspective(Nz::DegreeAnglef(70.f), float(windowSize.x) / windowSize.y, 0.1f, 1000.f), Nz::Matrix4f::Translate(Nz::Vector3f::Backward() * 1));
-
-		// Create light
-		//auto xx = std::make_any<Nz::DirectionalLight>();
-		/*auto lightEntity = r.CreateEntity();
-		auto& light = r.EmplaceComponent<Nz::DirectionalLight>(lightEntity, Nz::DirectionalLight());
-		light.UpdateRotation(Nz::EulerAnglesf(-45.f, 0.f, 0.f));*/
-
+		auto lightEntity = r.CreateEntity();
+		{
+			auto& light = r.EmplaceComponent<Nz::DirectionalLight>(lightEntity);
+			light.UpdateRotation(Nz::EulerAnglesf(-45.f, 0.f, 0.f));
+		}
 		Nz::Mouse::SetRelativeMouseMode(true);
+		window.GetEventHandler().OnEvent.Connect([&](const Nz::WindowEventHandler*, const Nz::WindowEvent& event)
+		{
+			switch (event.type)
+			{
+			case Nz::WindowEventType::MouseMoved:
+			{
+				const float sensitivity = 0.3f;
 
-		/*------------------------------------ Game loop ------------------------------------*/
-		float cameraSpeed = 150.f;
+				camAngles.yaw = camAngles.yaw - event.mouseMove.deltaX * sensitivity;
+				camAngles.yaw.Normalize();
+				camAngles.pitch = Nz::Clamp(camAngles.pitch - event.mouseMove.deltaY * sensitivity, -89.f, 89.f);
+				camQuat = camAngles;
+				break;
+			}
+
+			case Nz::WindowEventType::Resized:
+			{
+				const Nz::Vector2ui newWindowSize = window.GetSize();
+				viewerInstance.UpdateProjectionMatrix(Nz::Matrix4f::Perspective(Nz::DegreeAnglef(70.f), float(newWindowSize.x) / newWindowSize.y, 0.1f, 1000.f));
+				viewerInstance.UpdateTargetSize(Nz::Vector2f(newWindowSize));
+				break;
+			}
+
+			default:
+				break;
+			}
+		});
+		
 
 		std::chrono::steady_clock::time_point lastFrameTime = std::chrono::steady_clock::now();
 		float deltaTime = 0.f;
-		float timeStep = 0.02f;
-		float timeUpdate = 0.016666f;
+		constexpr float timeStep = 0.02f;
+		constexpr float timeUpdate = 0.016666f;
 		float stepUpdateRemainingTime = 0.f;
 		float updateRemainingTime = 0.f;
 
@@ -93,6 +126,8 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] const char** argv)
 			while (updateRemainingTime >= timeUpdate)
 			{
 				world.Update(updateRemainingTime);
+				viewerInstance.UpdateViewMatrix(Nz::Matrix4f::TransformInverse(viewerPos, camAngles));
+				viewerInstance.UpdateEyePosition(viewerPos);
 				updateRemainingTime -= timeUpdate;
 			}
 

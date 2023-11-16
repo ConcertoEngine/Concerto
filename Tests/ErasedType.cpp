@@ -7,7 +7,7 @@
 
 #include <gtest/gtest.h>
 
-#include <Concerto/Ecs/ErasedType.hpp>
+#include <Concerto/ErasedType.hpp>
 
 using namespace Concerto;
 

@@ -15,7 +15,7 @@
 #include "Concerto/Ecs/Component.hpp"
 #include "Concerto/Ecs/Components/Name.hpp"
 #include "Concerto/Ecs/Entity.hpp"
-#include "Concerto//Ecs/ErasedType.hpp"
+#include "Concerto/ErasedType.hpp"
 
 namespace Concerto
 {

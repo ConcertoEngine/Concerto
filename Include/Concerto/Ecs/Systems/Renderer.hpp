@@ -10,35 +10,40 @@
 
 #include <Nazara/Core.hpp>
 #include <Nazara/Graphics.hpp>
-#include <Nazara/Platform/AppWindowingComponent.hpp>
+#include <Nazara/Renderer.hpp>
+#include <Nazara/Platform.hpp>
 
-namespace Nz
+namespace Concerto
 {
-	class Nz::AppWindowingComponent;
-}
-
-namespace Concerto::Ecs::System
-{
-	class Renderer : public System
+	class Renderer final : public System
 	{
 	 public:
 		explicit Renderer(const Config::Object &data);
 
-		virtual void Update(float deltaTime, Registry &r) override;
+		void Update(float deltaTime, Registry &r) override;
 
 		Nz::WindowSwapchain& GetWindowSwapchain();
+		[[nodiscard]] const Nz::WindowSwapchain& GetWindowSwapchain() const;
+		Nz::Window& GetWindow();
 
-		const Nz::WindowSwapchain& GetWindowSwapchain() const;
-
-		bool ShouldClose() const;
+		[[nodiscard]] bool ShouldClose() const;
+		
+		void SetViewerInstance(Nz::ViewerInstance& viewerInstance, Nz::Camera& camera);
 	private:
 		Nz::Application<Nz::Graphics> _app;
+		std::shared_ptr<Nz::RenderDevice> _renderDevice;
 		Nz::AppWindowingComponent* _windowing;
-		Nz::AppEntitySystemComponent* _ecsComponent;
 		Nz::Window* _window;
-		Nz::EnttWorld* _world;
-		Nz::RenderSystem* _renderSystem;
-		Nz::WindowSwapchain* _windowSwapchain;
+		Nz::WindowSwapchain _windowSwapchain;
+		Nz::WorldInstancePtr _modelInstance;
+		Nz::ElementRendererRegistry _elementRegistry;
+		Nz::ForwardFramePipeline _framePipeline;
+		Nz::ViewerInstance* _viewerInstance;
+
+		struct WorldInstanceIndex
+		{
+			std::size_t index;
+		};
 	};
 } // Concerto
 
