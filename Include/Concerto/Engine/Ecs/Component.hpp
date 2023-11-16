@@ -6,10 +6,11 @@
 #define CONCERTO_COMPONENTHELPER_HPP
 
 #include <cstddef>
+#include "Concerto/Engine/Export.hpp"
 
 namespace Concerto
 {
-	class ComponentHelper
+	class CONCERTO_ENGINE_API ComponentHelper
 	{
 	public:
 		using Id = std::size_t;

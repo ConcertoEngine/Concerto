@@ -12,7 +12,7 @@ if is_plat("windows") then
     set_runtimes(is_mode("debug") and "MDd" or "MD")
 end
 
-target('Concerto')
+target('ConcertoEngine')
     set_kind('shared')
     if is_mode('debug') then
         set_symbols('debug')
@@ -20,24 +20,24 @@ target('Concerto')
     set_warnings('allextra')
     set_languages('cxx20')
 
-    add_includedirs('Include', 'Include/Concerto', 'Include/Concerto/Ecs', 'Include/Concerto/Ecs/Components', 'Include/Concerto/Ecs/Systems', { public = true })
+    add_includedirs('Include', 'Include/Concerto/Engine', 'Include/Concerto', 'Include/Concerto/Engine/Ecs', 'Include/Concerto/Engine/Ecs/Components', 'Include/Concerto/Engine/Ecs/Systems', { public = true })
 
-    add_headerfiles('Include/(Concerto/*.hpp)', 'Include/(Concerto/Ecs/*.hpp)', 'Include/(Concerto/Ecs/Components/*.hpp)', 'Include/(Concerto/Ecs/Systems/*.hpp)')
-    add_headerfiles('Include/(Concerto/*.inl)', 'Include/(Concerto/Ecs/*.inl)', 'Include/(Concerto/Ecs/Components/*.inl)', 'Include/(Concerto/Ecs/Systems/*.inl)')
+    add_headerfiles('Include/(Concerto/Engine/*.hpp)', 'Include/(Concerto/Engine/Ecs/*.hpp)', 'Include/(Concerto/Engine/Ecs/Components/*.hpp)', 'Include/(Concerto/Engine/Ecs/Systems/*.hpp)')
+    add_headerfiles('Include/(Concerto/Engine/*.inl)', 'Include/(Concerto/Engine/Ecs/*.inl)', 'Include/(Concerto/Engine/Ecs/Components/*.inl)', 'Include/(Concerto/Engine/Ecs/Systems/*.inl)')
 
     add_files('Src/**.cpp')
-
+    add_defines("CONCERTO_ENGINE_BUILD")
     add_packages('ConcertoCore', {public = true})
     add_packages('nazaraengine', {public = true})
 
-target('ConcertoUnitTests')
+target('ConcertoEngineUnitTests')
     set_kind('binary')
     set_symbols('debug')
     set_warnings('allextra')
     set_languages('cxx20')
     add_files('Tests/*.cpp')
     add_packages('gtest')
-    add_deps('Concerto')
+    add_deps('ConcertoEngine')
 
 includes('Xmake/Rules/*.lua')
 includes('Examples/xmake.lua')

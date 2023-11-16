@@ -9,9 +9,9 @@
 #include <Concerto/Core/Math/Quaternion.hpp>
 #include <Concerto/Core/Logger.hpp>
 
-#include <Concerto/Ecs/Registry.hpp>
-#include <Concerto/Ecs/World.hpp>
-#include <Concerto/Ecs/Systems/Renderer.hpp>
+#include <Concerto/Engine/Ecs/Registry.hpp>
+#include <Concerto/Engine/Ecs/World.hpp>
+#include <Concerto/Engine/Ecs/Systems/Renderer.hpp>
 
 #include <Nazara/Utility/SimpleTextDrawer.hpp>
 #include <Nazara/Utility/Components/NodeComponent.hpp>

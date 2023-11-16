@@ -5,17 +5,18 @@
 #ifndef CONCERTO_INCLUDE_ECS_SYSTEMS_RENDERER_HPP_
 #define CONCERTO_INCLUDE_ECS_SYSTEMS_RENDERER_HPP_
 
-#include "Concerto/Ecs/Systems/System.hpp"
-#include "Concerto/Ecs/Matcher.hpp"
-
 #include <Nazara/Core.hpp>
 #include <Nazara/Graphics.hpp>
 #include <Nazara/Renderer.hpp>
 #include <Nazara/Platform.hpp>
 
+#include "Concerto/Engine/Export.hpp"
+#include "Concerto/Engine/Ecs/Systems/System.hpp"
+#include "Concerto/Engine/Ecs/Matcher.hpp"
+
 namespace Concerto
 {
-	class Renderer final : public System
+	class CONCERTO_ENGINE_API Renderer final : public System
 	{
 	 public:
 		explicit Renderer(const Config::Object &data);

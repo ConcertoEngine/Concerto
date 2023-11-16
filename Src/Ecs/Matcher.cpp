@@ -5,8 +5,8 @@
 #include <algorithm>
 #include <cassert>
 
-#include "Concerto/Ecs/Matcher.hpp"
-#include "Concerto/Ecs/Entity.hpp"
+#include "Concerto/Engine/Ecs/Matcher.hpp"
+#include "Concerto/Engine/Ecs/Entity.hpp"
 
 namespace Concerto
 {

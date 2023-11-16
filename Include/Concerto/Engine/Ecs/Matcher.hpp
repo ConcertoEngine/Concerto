@@ -6,14 +6,15 @@
 #define CONCERTO_MATCHER_HPP
 
 #include <set>
-#include "Concerto/Ecs/Registry.hpp"
+#include "Concerto/Engine/Export.hpp"
+#include "Concerto/Engine/Ecs/Registry.hpp"
 
 namespace Concerto
 {
 	/**
 	 * @brief The Matcher class allows you to specify criteria for matching entities in a registry.
 	 */
-	class Matcher
+	class CONCERTO_ENGINE_API Matcher
 	{
 	public:
 		Matcher() = default;

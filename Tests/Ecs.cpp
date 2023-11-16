@@ -3,7 +3,7 @@
 //
 
 #include <gtest/gtest.h>
-#include "Concerto/Ecs/Registry.hpp"
+#include "Concerto/Engine/Ecs/Registry.hpp"
 #include "Concerto/Core/Math/Transform.hpp"
 #include "Concerto/Core/Math/Vector.hpp"
 

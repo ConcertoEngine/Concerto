@@ -12,9 +12,10 @@
 #include <string>
 #include <Concerto/Core/SparseVector.hpp>
 
-#include "Concerto/Ecs/Component.hpp"
-#include "Concerto/Ecs/Components/Name.hpp"
-#include "Concerto/Ecs/Entity.hpp"
+#include "Concerto/Engine/Export.hpp"
+#include "Concerto/Engine/Ecs/Component.hpp"
+#include "Concerto/Engine/Ecs/Components/Name.hpp"
+#include "Concerto/Engine/Ecs/Entity.hpp"
 #include "Concerto/Core/Any.hpp"
 
 namespace Concerto
@@ -23,7 +24,7 @@ namespace Concerto
 	 * @brief The Registry class is the main class of the ECS.
 	 * It is used to create entities and Components.
 	 */
-	class Registry
+	class CONCERTO_ENGINE_API Registry
 	{
 	 public:
 		using map_element = SparseVector<Any>;
