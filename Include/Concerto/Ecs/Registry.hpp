@@ -15,7 +15,7 @@
 #include "Concerto/Ecs/Component.hpp"
 #include "Concerto/Ecs/Components/Name.hpp"
 #include "Concerto/Ecs/Entity.hpp"
-#include "Concerto/ErasedType.hpp"
+#include "Concerto/Core/Any.hpp"
 
 namespace Concerto
 {
@@ -26,7 +26,7 @@ namespace Concerto
 	class Registry
 	{
 	 public:
-		using map_element = SparseVector<ErasedType>;
+		using map_element = SparseVector<Any>;
 		using container_type = std::unordered_map<ComponentHelper::Id, map_element>;
 		using iterator = container_type::iterator;
 		using const_iterator = container_type::const_iterator;
@@ -103,10 +103,10 @@ namespace Concerto
 			if (it == _components.end())
 			{
 				auto newCompIt = _components.emplace(id, map_element());
-				ErasedType erasedType = ErasedType::Make<Comp>(std::forward<Args>(args)...);
+				Any erasedType = Any::Make<Comp>(std::forward<Args>(args)...);
 				return newCompIt.first->second.Emplace(entity, std::move(erasedType)).As<Comp&>();
 			}
-			ErasedType erasedType = ErasedType::Make<Comp>(std::forward<Args>(args)...);
+			Any erasedType = Any::Make<Comp>(std::forward<Args>(args)...);
 			auto& sparseArrayElement = it->second.Emplace(entity, std::move(erasedType));
 			return sparseArrayElement.As<Comp&>();
 		}
