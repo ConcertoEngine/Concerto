@@ -1,4 +1,4 @@
-add_rules('mode.debug')
+add_rules("mode.debug", "mode.release")
 add_rules("plugin.vsxmake.autoupdate")
 
 add_repositories('Concerto-xrepo https://github.com/ConcertoEngine/xmake-repo.git main')
