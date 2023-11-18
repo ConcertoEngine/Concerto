@@ -5,7 +5,7 @@ add_repositories('Concerto-xrepo https://github.com/ConcertoEngine/xmake-repo.gi
 add_repositories("nazara-repo https://github.com/NazaraEngine/xmake-repo.git")
 
 add_requires('gtest', 'ConcertoCore')
-add_requires("nazaraengine", { debug = is_mode("debug"), configs = { audio = false, bulletphysics3d = false, chipmunkphysics2d = false, graphics = true, joltphysics3d = false, platform = true, renderer = true, utility = true, widgets = false, plugin_assimp = false, network = false }})
+add_requires("nazaraengine", {configs = { debug = is_mode("debug"), with_symbols = true, audio = false, bulletphysics3d = false, chipmunkphysics2d = false, graphics = true, joltphysics3d = false, platform = true, renderer = true, utility = true, widgets = false, plugin_assimp = false, network = false }})
 
 
 if is_plat("windows") then
