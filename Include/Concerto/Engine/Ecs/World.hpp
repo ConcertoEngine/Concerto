@@ -79,7 +79,7 @@ namespace Concerto
 			static_assert(std::is_base_of_v<System, T>, "T must inherit from System");
 			if (!HasSystem<T>())
 				throw std::runtime_error("System not found");
-			auto id = System::System::GetId<T>();
+			auto id = System::GetId<T>();
 			return *_systems[id];
 		}
 
@@ -91,7 +91,7 @@ namespace Concerto
 		template<typename T>
 		void RemoveSystem()
 		{
-			static_assert(std::is_base_of_v<System::System, T>, "T must inherit from System");
+			static_assert(std::is_base_of_v<System, T>, "T must inherit from System");
 			if (!HasSystem<T>())
 				throw std::runtime_error("System not found");
 			auto id = System::GetId<T>();
@@ -99,7 +99,7 @@ namespace Concerto
 		}
 
 	private:
-		Concerto::Registry _registry;
+		Registry _registry;
 		SparseVector<std::unique_ptr<System>> _systems;
 	};
 }

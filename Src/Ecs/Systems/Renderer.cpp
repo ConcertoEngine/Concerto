@@ -62,6 +62,36 @@ namespace Concerto
 			_framePipeline.RegisterRenderable(worldInstanceIndex.index, Nz::FramePipeline::NoSkeletonInstance, &model, 0xFFFFFFFF, scissorBox);
 		});
 
+		modelMatcher = Matcher(r);
+		modelMatcher.AllOf<Nz::GraphicsComponent>().NoneOf<WorldInstanceIndex>();
+		modelMatcher.ForEachMatching([&](Registry& registry, Entity::Id entity)
+		{
+			const auto& gfxComponent = registry.GetComponent<Nz::GraphicsComponent>(entity);
+			auto& renderables = gfxComponent.GetRenderables();
+			WorldInstanceIndex worldInstanceIndex = { _framePipeline.RegisterWorldInstance(_modelInstance) };
+			registry.EmplaceComponent<WorldInstanceIndex>(entity, worldInstanceIndex);
+			for (auto& renderable : renderables)
+			{
+				if (renderable.renderable == nullptr)
+					continue;
+				_framePipeline.RegisterRenderable(worldInstanceIndex.index, Nz::FramePipeline::NoSkeletonInstance, renderable.renderable.get(), 0xFFFFFFFF, scissorBox);
+			}
+		});
+
+		modelMatcher = Matcher(r);
+		modelMatcher.AllOf<Nz::GraphicsComponent, WorldInstanceIndex>();
+		modelMatcher.ForEachMatching([&](Registry& registry, Entity::Id entity)
+		{
+			const auto& gfxComponent = registry.GetComponent<Nz::GraphicsComponent>(entity);
+			auto& renderables = gfxComponent.GetRenderables();
+			const auto& worldInstanceIndex = registry.GetComponent<WorldInstanceIndex>(entity);
+			for (auto& renderable : renderables)
+			{
+				if (renderable.renderable == nullptr)
+					continue;
+				_framePipeline.RegisterRenderable(worldInstanceIndex.index, Nz::FramePipeline::NoSkeletonInstance, renderable.renderable.get(), 0xFFFFFFFF, scissorBox);
+			}
+		});
 
 		Matcher lightMatcher(r);
 		lightMatcher.AllOf<Nz::DirectionalLight>();
