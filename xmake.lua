@@ -28,6 +28,9 @@ local modules = {
     }
 }
 
+option("examples", { description = "Enable examples", default = false })
+option("unit-test", { description = "Enable unit tests", default = false })
+
 for name, module in table.orderpairs(modules) do
     if module.Option then
         option(module.Option, { description = "Enable " .. name .. " module", default = true })
@@ -65,16 +68,21 @@ for name, module in pairs(modules) do
     end
 end
 
-target("ConcertoEngineUnitTests")
-    set_kind("binary")
-    if is_mode("debug") then
-        set_symbols("debug")
-    end
-    set_warnings("allextra")
-    set_languages("cxx20")
-    add_files("Tests/*.cpp")
-    add_packages("gtest")
-    add_deps("ConcertoEngineEcs")
+if has_config("unit-test") then
+    target("ConcertoEngineUnitTests")
+        set_kind("binary")
+        if is_mode("debug") then
+            set_symbols("debug")
+        end
+        set_warnings("allextra")
+        set_languages("cxx20")
+        add_files("Tests/*.cpp")
+        add_packages("gtest")
+        add_deps("ConcertoEngineEcs")
+end
 
 includes("Xmake/Rules/*.lua")
-includes("Examples/xmake.lua")
+
+if has_config("examples") then
+    includes("Examples/xmake.lua")
+end
