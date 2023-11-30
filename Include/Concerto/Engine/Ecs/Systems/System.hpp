@@ -7,7 +7,7 @@
 
 #include <Concerto/Core/Config.hpp>
 
-#include "Concerto/Engine/Export.hpp"
+#include "Concerto/Engine/Ecs/Export.hpp"
 #include "Concerto/Engine/Ecs/Registry.hpp"
 
 namespace Concerto
@@ -16,7 +16,7 @@ namespace Concerto
 	 * @brief Interface for a system.
 	 * Provides the logic to act on entities and it Components.
 	 */
-	class CONCERTO_ENGINE_API System
+	class CONCERTO_ENGINE_ECS_API System
 	{
 	public:
 		using Id = std::size_t;

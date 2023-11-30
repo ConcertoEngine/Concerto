@@ -6,11 +6,12 @@
 #define CONCERTO_COMPONENTHELPER_HPP
 
 #include <cstddef>
-#include "Concerto/Engine/Export.hpp"
+#include <Concerto/Core/Logger.hpp>
+#include "Concerto/Engine/Ecs/Export.hpp"
 
 namespace Concerto
 {
-	class CONCERTO_ENGINE_API ComponentHelper
+	class CONCERTO_ENGINE_ECS_API ComponentHelper
 	{
 	public:
 		using Id = std::size_t;
@@ -18,6 +19,7 @@ namespace Concerto
 		template<typename T>
 		static Id GetId()
 		{
+			Logger::Debug(typeid(T).name());
 			static const Id id = _nextId++;
 			return id;
 		}

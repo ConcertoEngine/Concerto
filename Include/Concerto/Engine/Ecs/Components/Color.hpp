@@ -7,11 +7,11 @@
 
 #include <Concerto/Core/Math/Vector.hpp>
 
-#include "Concerto/Engine/Export.hpp"
+#include "Concerto/Engine/Ecs/Export.hpp"
 
 namespace Concerto
 {
-	struct CONCERTO_ENGINE_API Color
+	struct CONCERTO_ENGINE_ECS_API Color
 	{
 	 public:
 		Color() = default;

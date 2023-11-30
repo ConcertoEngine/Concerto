@@ -6,11 +6,11 @@
 #define CONCERTO_NAME_HPP
 
 #include <string>
-#include "Concerto/Engine/Export.hpp"
+#include "Concerto/Engine/Ecs/Export.hpp"
 
 namespace Concerto
 {
-	struct CONCERTO_ENGINE_API Name
+	struct CONCERTO_ENGINE_ECS_API Name
 	{
 		Name() = default;
 		explicit Name(std::string name) : _name(std::move(name)) {}

@@ -10,13 +10,13 @@
 #include <Nazara/Renderer.hpp>
 #include <Nazara/Platform.hpp>
 
-#include "Concerto/Engine/Export.hpp"
+#include "Concerto/Engine/Graphics/Export.hpp"
 #include "Concerto/Engine/Ecs/Systems/System.hpp"
 #include "Concerto/Engine/Ecs/Matcher.hpp"
 
 namespace Concerto
 {
-	class CONCERTO_ENGINE_API Renderer final : public System
+	class CONCERTO_ENGINE_GRAPHICS_API Renderer final : public System
 	{
 	 public:
 		explicit Renderer(const Config::Object &data);

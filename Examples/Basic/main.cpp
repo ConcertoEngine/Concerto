@@ -11,7 +11,7 @@
 
 #include <Concerto/Engine/Ecs/Registry.hpp>
 #include <Concerto/Engine/Ecs/World.hpp>
-#include <Concerto/Engine/Ecs/Systems/Renderer.hpp>
+#include <Concerto/Engine/Graphics/Renderer.hpp>
 
 #include <Nazara/Utility/SimpleTextDrawer.hpp>
 #include <Nazara/Utility/Components/NodeComponent.hpp>

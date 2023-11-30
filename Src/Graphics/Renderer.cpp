@@ -8,7 +8,7 @@
 #include <Nazara/Graphics/Components/GraphicsComponent.hpp>
 #include <Nazara/Utility/Components/NodeComponent.hpp>
 
-#include "Concerto/Engine/Ecs/Systems/Renderer.hpp"
+#include "Concerto/Engine/Graphics/Renderer.hpp"
 
 namespace Concerto
 {

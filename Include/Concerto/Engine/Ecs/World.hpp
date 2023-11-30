@@ -8,7 +8,7 @@
 #include <memory>
 #include <Concerto/Core/SparseVector.hpp>
 
-#include "Concerto/Engine/Export.hpp"
+#include "Concerto/Engine/Ecs/Export.hpp"
 #include "Concerto/Engine/Ecs/Registry.hpp"
 #include "Concerto/Engine/Ecs/Systems/System.hpp"
 
@@ -18,7 +18,7 @@ namespace Concerto
 	 * @brief The World class is the main class of the ECS.
 	 * It contains all the entities and Systems.
 	 */
-	class CONCERTO_ENGINE_API World
+	class CONCERTO_ENGINE_ECS_API World
 	{
 	public:
 		World() = default;
