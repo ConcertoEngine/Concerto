@@ -100,7 +100,7 @@ namespace Concerto
 
 	private:
 		Registry _registry;
-		SparseVector<std::unique_ptr<System>> _systems;
+		SparseVector<std::unique_ptr<System>> _systems = {};
 	};
 }
 
