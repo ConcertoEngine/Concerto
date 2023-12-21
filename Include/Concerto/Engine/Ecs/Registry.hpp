@@ -182,7 +182,7 @@ namespace Concerto
 
 	 private:
 		std::size_t _nextId = 0;
-		container_type _components;
+		container_type _components = {};
 	};
 }
 
