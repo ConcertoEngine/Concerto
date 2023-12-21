@@ -19,7 +19,6 @@ namespace Concerto
 		template<typename T>
 		static Id GetId()
 		{
-			Logger::Debug(typeid(T).name());
 			static const Id id = _nextId++;
 			return id;
 		}
