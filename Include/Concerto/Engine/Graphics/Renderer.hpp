@@ -33,7 +33,7 @@ namespace Concerto
 	private:
 		Nz::Application<Nz::Graphics> _app;
 		std::shared_ptr<Nz::RenderDevice> _renderDevice;
-		Nz::AppWindowingComponent* _windowing;
+		Nz::WindowingAppComponent* _windowing;
 		Nz::Window* _window;
 		Nz::WindowSwapchain _windowSwapchain;
 		Nz::WorldInstancePtr _modelInstance;

@@ -17,7 +17,6 @@
 #include <Nazara/Utility/Components/NodeComponent.hpp>
 
 using namespace Concerto;
-using namespace Concerto::Math;
 
 int main([[maybe_unused]] int argc, [[maybe_unused]] const char** argv)
 {
@@ -33,14 +32,14 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] const char** argv)
 		auto& windowSwapchain = renderer.GetWindowSwapchain();
 		auto& window = renderer.GetWindow();
 
-
+		auto renderWindow = std::make_shared<Nz::RenderWindow>(windowSwapchain);
 		Nz::EulerAnglesf camAngles(0.f, 0.f, 0.f);
 		Nz::Quaternionf camQuat(camAngles);
 		Nz::Vector3f viewerPos = Nz::Vector3f::Zero();
 
-		Nz::Vector2f windowSize = Nz::Vector2f(windowSwapchain.GetSize());
+		auto windowSize = Nz::Vector2f(windowSwapchain.GetSize());
 
-		Nz::Camera camera = Nz::Camera(&windowSwapchain);
+		Nz::Camera camera(renderWindow);
 		Nz::ViewerInstance& viewerInstance = camera.GetViewerInstance();
 		viewerInstance.UpdateTargetSize(Nz::Vector2f(windowSwapchain.GetSize()));
 		viewerInstance.UpdateProjViewMatrices(Nz::Matrix4f::Perspective(Nz::DegreeAnglef(70.f), windowSize.x / windowSize.y, 0.1f, 1000.f), Nz::Matrix4f::Translate(Nz::Vector3f::Backward() * 1));

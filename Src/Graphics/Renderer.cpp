@@ -16,7 +16,7 @@ namespace Concerto
 		System(data),
 		_app(),
 		_renderDevice(Nz::Graphics::Instance()->GetRenderDevice()),
-		_windowing(&_app.AddComponent<Nz::AppWindowingComponent>()),
+		_windowing(&_app.AddComponent<Nz::WindowingAppComponent>()),
 		_window(&_windowing->CreateWindow(Nz::VideoMode(1280, 720), "Concerto")),
 		_windowSwapchain(_renderDevice, *_window),
 		_modelInstance(std::make_shared<Nz::WorldInstance>()),
