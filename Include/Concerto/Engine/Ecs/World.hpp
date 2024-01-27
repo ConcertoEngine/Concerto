@@ -7,6 +7,7 @@
 
 #include <memory>
 #include <Concerto/Core/SparseVector.hpp>
+#include <Concerto/Core/TypeInfo.hpp>
 
 #include "Concerto/Engine/Ecs/Export.hpp"
 #include "Concerto/Engine/Ecs/Registry.hpp"
@@ -49,10 +50,11 @@ namespace Concerto
 		T& AddSystem(Args&& ...args)
 		{
 			static_assert(std::is_base_of_v<System, T>, "T must inherit from System");
-			auto id = System::GetId<T>();
+			auto id = TypeId<T>();
 			std::unique_ptr<System> systemPtr = std::make_unique<T>(std::forward<Args>(args)...);
-			auto& system = _systems.Emplace(id, std::move(systemPtr));
-			return static_cast<T&>(*system);
+			auto& system = *systemPtr;
+			_systems.emplace(id, std::move(systemPtr));
+			return static_cast<T&>(system);
 		}
 
 		/**
@@ -64,7 +66,7 @@ namespace Concerto
 		[[nodiscard]] bool HasSystem() const
 		{
 			static_assert(std::is_base_of_v<System, T>, "T must inherit from System");
-			return _systems.Has(System::GetId<T>());
+			return _systems.contains(TypeId<T>());
 		}
 
 		/**
@@ -79,7 +81,7 @@ namespace Concerto
 			static_assert(std::is_base_of_v<System, T>, "T must inherit from System");
 			if (!HasSystem<T>())
 				throw std::runtime_error("System not found");
-			auto id = System::GetId<T>();
+			auto id = TypeId<T>();
 			return *_systems[id];
 		}
 
@@ -94,13 +96,12 @@ namespace Concerto
 			static_assert(std::is_base_of_v<System, T>, "T must inherit from System");
 			if (!HasSystem<T>())
 				throw std::runtime_error("System not found");
-			auto id = System::GetId<T>();
-			_systems.Erase(id);
+			_systems.erase(TypeId<T>());
 		}
 
 	private:
 		Registry _registry = {};
-		SparseVector<std::unique_ptr<System>> _systems = {};
+		std::unordered_map<UInt64 /*System id*/, std::unique_ptr<System>> _systems;
 	};
 }
 

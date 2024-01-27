@@ -42,7 +42,6 @@ if has_config("graphics") then
     add_requires("nazaraengine", {configs = { debug = is_mode("debug"), with_symbols = true, audio = false, bulletphysics3d = false, chipmunkphysics2d = false, graphics = true, joltphysics3d = false, platform = true, renderer = true, utility = true, widgets = false, plugin_assimp = false, network = false }})
 end
 
-
 for name, module in pairs(modules) do
     if has_config(module.Option) then
         target("ConcertoEngine" .. name, function()

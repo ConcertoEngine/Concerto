@@ -22,7 +22,7 @@ namespace Concerto
 	[[nodiscard]] bool Matcher::Matches(Entity::Id entity)
 	{
 		assert(_registry != nullptr);
-		if (!_allOf.empty() && std::any_of(_allOf.begin(), _allOf.end(), [&](ComponentHelper::Id id)
+		if (!_allOf.empty() && std::any_of(_allOf.begin(), _allOf.end(), [&](UInt64 id)
 			{
 				return !_registry->HasComponent(entity, id);
 			}))
@@ -30,7 +30,7 @@ namespace Concerto
 			_matchingEntities.erase(entity);
 			return false;
 		}
-		if (!_noneOf.empty() && std::any_of(_noneOf.begin(), _noneOf.end(), [&](ComponentHelper::Id id)
+		if (!_noneOf.empty() && std::any_of(_noneOf.begin(), _noneOf.end(), [&](UInt64 id)
 		{
 			return _registry->HasComponent(entity, id);
 		}))

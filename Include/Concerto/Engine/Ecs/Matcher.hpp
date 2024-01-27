@@ -6,6 +6,9 @@
 #define CONCERTO_MATCHER_HPP
 
 #include <set>
+
+#include <Concerto/Core/TypeInfo.hpp>
+
 #include "Concerto/Engine/Ecs/Export.hpp"
 #include "Concerto/Engine/Ecs/Registry.hpp"
 
@@ -45,7 +48,7 @@ namespace Concerto
 		template<typename... Component>
 		Matcher& AllOf()
 		{
-			(_allOf.insert(ComponentHelper::GetId<Component>()), ...);
+			(_allOf.insert(TypeId<Component>()), ...);
 			return *this;
 		}
 
@@ -57,7 +60,7 @@ namespace Concerto
 		template<typename... Component>
 		Matcher& NoneOf()
 		{
-			(_noneOf.insert(ComponentHelper::GetId<Component>()), ...);
+			(_noneOf.insert(TypeId<Component>()), ...);
 			return *this;
 		}
 
@@ -102,8 +105,8 @@ namespace Concerto
 		}
 	private:
 		Registry* _registry = nullptr;
-		std::set<ComponentHelper::Id> _allOf;
-		std::set<ComponentHelper::Id> _noneOf;
+		std::set<UInt64 /*Component Id*/> _allOf;
+		std::set<UInt64 /*Component Id*/> _noneOf;
 		std::set<Entity::Id> _excluded;
 		std::set<Entity::Id> _only;
 		std::set<Entity::Id> _matchingEntities;

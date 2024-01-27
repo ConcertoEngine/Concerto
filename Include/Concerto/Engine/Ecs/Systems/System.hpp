@@ -39,19 +39,6 @@ namespace Concerto
 		 * @param r The registry of the world
 		 */
 		virtual void StepUpdate(float deltaTime, Registry &r) {};
-
-		/**
-		 * @brief Get the Id of the system T
-		 * @tparam T The type of the system to get the Id
-		 * @return The Id of the system T
-		 */
-		template<typename T>
-		static Id GetId()
-		{
-			static const Id id = _nextId++;
-			return id;
-		}
-
 	private:
 		const Config::Object &_data;
 		static inline int _nextId;
