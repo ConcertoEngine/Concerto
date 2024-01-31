@@ -19,10 +19,7 @@ jobs:
       matrix:
         os: [ubuntu-latest]
         arch: [x86_64]
-        confs:
-        - { mode: debug }
-        - { mode: release }
-        - { mode: releasedbg }
+        confs: [debug, release, releasedbg]
 
     steps:
       - uses: actions/checkout@v4
@@ -60,7 +57,7 @@ jobs:
           key: Linux-${{ matrix.arch }}-${{ matrix.confs.mode }}-${{ steps.dep_hash.outputs.hash }}-W${{ steps.cache_key.outputs.key }}
 
       - name: Configure xmake and install dependencies
-        run: xmake config --arch=${{ matrix.arch }} --mode=${{ matrix.confs.mode }} ${{ matrix.confs.config }} --unit-test=y --yes
+        run: xmake config --arch=${{ matrix.arch }} --mode=${{ matrix.confs.mode }} --unit-test=y --yes
 
       - name: Save cached xmake dependencies
         if: ${{ !steps.restore-depcache.outputs.cache-hit }}
