@@ -6,7 +6,6 @@
 #include <Concerto/Core/Logger.hpp>
 #include <entt/entt.hpp>
 #include <Nazara/Graphics/Components/GraphicsComponent.hpp>
-#include <Nazara/Utility/Components/NodeComponent.hpp>
 
 #include "Concerto/Engine/Graphics/Renderer.hpp"
 
@@ -31,8 +30,7 @@ namespace Concerto
 	{
 		if (_viewerInstance == nullptr)
 		{
-			CONCERTO_ASSERT_FALSE;
-			Logger::Debug("ViewerInstance is not set, skipping rendering, please set it with Renderer::SetViewerInstance");
+			CONCERTO_ASSERT_FALSE("ViewerInstance is not set, skipping rendering, please set it with Renderer::SetViewerInstance");
 			return;
 		}
 
@@ -44,22 +42,22 @@ namespace Concerto
 		}
 		const Nz::Recti scissorBox(Nz::Vector2i::Zero(), Nz::Vector2i(_window->GetSize()));
 		Matcher modelMatcher(r);
-		modelMatcher.AllOf<Nz::Model, WorldInstanceIndex>();
+		modelMatcher.AllOf<std::shared_ptr<Nz::Model>, WorldInstanceIndex>();
 		modelMatcher.ForEachMatching([&](Registry& registry, Entity::Id entity)
 		{
-			const auto& model = registry.GetComponent<Nz::Model>(entity);
+			const auto& model = registry.GetComponent<std::shared_ptr<Nz::Model>>(entity);
 			const auto& [index] = registry.GetComponent<WorldInstanceIndex>(entity);
-			_framePipeline.RegisterRenderable(index, Nz::FramePipeline::NoSkeletonInstance, &model, 0xFFFFFFFF, scissorBox);
+			_framePipeline.RegisterRenderable(index, Nz::FramePipeline::NoSkeletonInstance, model.get(), 0xFFFFFFFF, scissorBox);
 		});
 
 		modelMatcher = Matcher(r);
-		modelMatcher.AllOf<Nz::Model>().NoneOf<WorldInstanceIndex>();
+		modelMatcher.AllOf<std::shared_ptr<Nz::Model>>().NoneOf<WorldInstanceIndex>();
 		modelMatcher.ForEachMatching([&](Registry& registry, Entity::Id entity)
 		{
-			const auto& model = registry.GetComponent<Nz::Model>(entity);
+			const auto& model = registry.GetComponent<std::shared_ptr<Nz::Model>>(entity);
 			WorldInstanceIndex worldInstanceIndex = {_framePipeline.RegisterWorldInstance(_modelInstance)};
 			registry.EmplaceComponent<WorldInstanceIndex>(entity, worldInstanceIndex);
-			_framePipeline.RegisterRenderable(worldInstanceIndex.index, Nz::FramePipeline::NoSkeletonInstance, &model, 0xFFFFFFFF, scissorBox);
+			_framePipeline.RegisterRenderable(worldInstanceIndex.index, Nz::FramePipeline::NoSkeletonInstance, model.get(), 0xFFFFFFFF, scissorBox);
 		});
 
 		modelMatcher = Matcher(r);
@@ -134,7 +132,7 @@ namespace Concerto
 
 	Nz::Window& Renderer::GetWindow()
 	{
-		CONCERTO_ASSERT(_window != nullptr);
+		CONCERTO_ASSERT(_window != nullptr, "Bad window handle");
 		return *_window;
 	}
 } // Concerto

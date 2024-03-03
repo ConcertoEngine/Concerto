@@ -96,7 +96,7 @@ namespace Concerto
 		requires std::invocable<Func, Registry&, Entity::Id>
 		void ForEachMatching(Func&& func)
 		{
-			CONCERTO_ASSERT(_registry != nullptr && "Matcher::ForEachMatching: Registry is null");
+			CONCERTO_ASSERT(_registry != nullptr, "Matcher::ForEachMatching: Registry is null");
 			for (auto entity = 0; entity < _registry->GetEntityCount(); ++entity)
 			{
 				if (Matches(entity))

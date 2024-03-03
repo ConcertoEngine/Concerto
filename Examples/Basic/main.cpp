@@ -4,17 +4,12 @@
 #include <fstream>
 
 #include <Concerto/Core/StructuredData.hpp>
-#include <Concerto/Core/Math/Transform.hpp>
-#include <Concerto/Core/Math/Matrix.hpp>
-#include <Concerto/Core/Math/Quaternion.hpp>
-#include <Concerto/Core/Logger.hpp>
 
 #include <Concerto/Engine/Ecs/Registry.hpp>
 #include <Concerto/Engine/Ecs/World.hpp>
 #include <Concerto/Engine/Graphics/Renderer.hpp>
 
-#include <Nazara/Utility/SimpleTextDrawer.hpp>
-#include <Nazara/Utility/Components/NodeComponent.hpp>
+#include <Nazara/Renderer.hpp>
 
 using namespace Concerto;
 
@@ -64,12 +59,12 @@ int main([[maybe_unused]] int argc, [[maybe_unused]] const char** argv)
 		sphereMesh->GenerateNormalsAndTangents();
 
 		std::shared_ptr<Nz::GraphicalMesh> gfxMesh = Nz::GraphicalMesh::BuildFromMesh(*sphereMesh);
-		
+
 		auto modelEntity = r.CreateEntity();
 		{
-			Nz::Model& model = r.EmplaceComponent<Nz::Model>(modelEntity, std::move(gfxMesh));
-			for (std::size_t i = 0; i < model.GetSubMeshCount(); ++i)
-				model.SetMaterial(i, materialInstance);
+			auto& model = r.EmplaceComponent<std::shared_ptr<Nz::Model>>(modelEntity, std::make_shared<Nz::Model>(std::move(gfxMesh)));
+			for (std::size_t i = 0; i < model->GetSubMeshCount(); ++i)
+				model->SetMaterial(i, materialInstance);
 		}
 
 		auto lightEntity = r.CreateEntity();

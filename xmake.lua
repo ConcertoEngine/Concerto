@@ -17,6 +17,8 @@ local modules = {
         Packages = {
             "ConcertoCore"
         },
+        func = function()
+        end
     },
     Graphics = {
         Option = "graphics",
@@ -25,6 +27,10 @@ local modules = {
             "ConcertoCore",
             "nazaraengine"
         },
+        func = function()
+            add_repositories("nazara-repo https://github.com/NazaraEngine/xmake-repo.git")
+            add_requires("nazaraengine", {configs = { debug = is_mode("debug"), with_symbols = true, audio = false, bulletphysics = false, chipmunkphysics = false, graphics = true, joltphysics = false, platform = true, renderer = true, utility = true, widgets = false, plugin_assimp = false, network = false }})
+        end
     }
 }
 
@@ -37,13 +43,9 @@ for name, module in table.orderpairs(modules) do
     end
 end
 
-if has_config("graphics") then
-    add_repositories("nazara-repo https://github.com/NazaraEngine/xmake-repo.git")
-    add_requires("nazaraengine", {configs = { debug = is_mode("debug"), with_symbols = true, audio = false, bulletphysics = false, chipmunkphysics = false, graphics = true, joltphysics = false, platform = true, renderer = true, utility = true, widgets = false, plugin_assimp = false, network = false }})
-end
-
 for name, module in pairs(modules) do
     if has_config(module.Option) then
+        module.func()
         target("ConcertoEngine" .. name, function()
             for _, dependency in pairs(module.Dependencies) do
                 add_deps(dependency)
@@ -55,6 +57,7 @@ for name, module in pairs(modules) do
                 add_headerfiles("Include/(Concerto/Engine/" .. name .. "/**" .. ext .. ")")
             end
             add_files("Src/" .. name .. "/*.cpp")
+            add_cxxflags("cl::/Zc:preprocessor", { public = true })
             if is_mode("debug") then
                 set_symbols("debug")
             end

@@ -113,6 +113,22 @@ namespace Concerto
 		}
 
 		/**
+		 * @brief Return the component or create it if it doesn't exist
+		 * @tparam Comp The component type
+		 * @tparam Args The arguments type used to construct the component
+		 * @param entity The entity
+		 * @param args The arguments to pass to the component constructor
+		 * @return A reference to the component
+		 */
+		template<typename Comp, typename... Args>
+		Comp& GetOrEmplace(Entity::Id entity, Args&& ...args)
+		{
+			if (HasComponent(entity, TypeId<Comp>()))
+				return GetComponent<Comp>(entity);
+			return EmplaceComponent<Comp>(entity, std::forward<Args>(args)...);
+		}
+
+		/**
 		 * @brief Remove a component from an entity
 		 * @tparam Comp The component type
 		 * @param entity The entity to remove the component from
